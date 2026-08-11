@@ -18,6 +18,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderTickets = (tickets) => {
     clearTickets();
 
+    const header = document.createElement("div");
+    header.className = "tickets-header";
+
+    const existingTitle = ticketsSection.querySelector("h2");
+    if (existingTitle) {
+      existingTitle.remove();
+      header.appendChild(existingTitle);
+    }
+
+    const newTicketButton = document.createElement("button");
+    newTicketButton.type = "button";
+    newTicketButton.className = "new-ticket-btn";
+    newTicketButton.textContent = "New Ticket";
+    newTicketButton.addEventListener("click", (event) => {
+      event.preventDefault();
+    });
+
+    header.appendChild(newTicketButton);
+    ticketsSection.appendChild(header);
+
     const table = document.createElement("table");
     table.className = "ticket-table";
 

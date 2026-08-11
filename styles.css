@@ -132,6 +132,32 @@ h2 {
   margin-top: 0;
 }
 
+.tickets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.tickets-header h2 {
+  margin: 0;
+}
+
+.new-ticket-btn {
+  background: #4682b4;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.new-ticket-btn:hover {
+  background: #3a6f95;
+}
+
 p {
   color: var(--muted);
   margin-bottom: 0;

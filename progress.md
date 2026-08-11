@@ -85,3 +85,4 @@ What not to add yet:
 - Tested and commited dashboard styling
 - Planned and implemented the ticket tracker data structure and design using Copilot (changing app.js, data.json and styles.css)
 - Planned and implemented the display of an empty ticket table using Copilot
+- Planned and implemented an inert 'new ticket' button
