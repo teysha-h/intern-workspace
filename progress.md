@@ -26,7 +26,6 @@
 The first version should be a simple static page with a clear dashboard structure and no dynamic logic.
 
 What to include:
-
 - `head`
   - page title
   - link to styles.css
@@ -51,31 +50,6 @@ What to include:
     - FAQ preview
     - contact list preview
 
-
-Example structure:
-
-- header/title
-- navbar
-- Dashboard section
-  - 3–4 summary cards: open tickets, tasks due, top link, onboarding step
-- Tickets section
-  - a few placeholder ticket cards
-- Shared to-do / links section
-  - a simple list of tasks and link items
-- Onboarding section
-  - a couple of resource cards
-- FAQ section
-  - a couple of question/answer blocks
-- Contacts section
-  - a small contact list
-
-What not to add yet:
-
-- no ticket filtering
-- no data loading from data.json
-- no task completion logic
-- no search or accordion interactivity
-- no API/XHR calls
 
 ## Tue - 11th August 2026
 ### Completed:
