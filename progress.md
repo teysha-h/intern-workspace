@@ -1,19 +1,19 @@
 # Project progress
 
-## 6th August 2026
+## Thu - 6th August 2026
 ### Completed:
 - Defined project objectives
 - Set up dev tools 
 
 
-## 7th August 2026
+## Fri - 7th August 2026
 ### Completed:
 - Set up GitHub repository
 - Practiced with Git and GitHub Copilot
 - Created file structure for project 
 
 
-## 10th August 2026
+## Mon - 10th August 2026
 ### Completed:
 - Define internal deadlines
 - Clarify app structure and data.json organization using Copilot
@@ -37,14 +37,16 @@ What to include:
   - simple navigation bar with anchors for:
     - Dashboard
     - Tickets
-    - To Do / Links
+    - To Do
+    - Links
     - Onboarding
     - FAQ
     - Contacts
   - main content area with distinct sections:
     - dashboard summary cards
     - ticket tracker preview
-    - shared to-do / links preview
+    - shared to-do
+    - links preview
     - onboarding resources preview
     - FAQ preview
     - contact list preview
@@ -74,3 +76,8 @@ What not to add yet:
 - no task completion logic
 - no search or accordion interactivity
 - no API/XHR calls
+
+## Tue - 11th August 2026
+### Completed:
+- Planned and implemented Dashboard cards linked to navbar 
+- Tested and commited dashboard
