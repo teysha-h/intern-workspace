@@ -1,0 +1,24 @@
+[
+  {
+    "id": "T-1001",
+    "title": "Update onboarding checklist",
+    "owner": "Ayesha",
+    "status": "In Progress",
+    "comments": [
+      "Need approval from mentor",
+      "Add links to internal docs"
+    ],
+    "timestamp": "2026-08-11T09:30:00Z"
+  },
+  {
+    "id": "T-1002",
+    "title": "Fix broken ticket layout",
+    "owner": "Jordan",
+    "status": "Open",
+    "comments": [
+      "Investigate why cards are not rendering",
+      "Confirm data file shape"
+    ],
+    "timestamp": "2026-08-10T16:15:00Z"
+  }
+]

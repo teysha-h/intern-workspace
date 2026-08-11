@@ -79,7 +79,8 @@ What not to add yet:
 
 ## Tue - 11th August 2026
 ### Completed:
-- Planned and implemented dashboard cards linked to navbar 
+- Planned and implemented dashboard cards linked to navbar using Copilot
 - Tested and commited dashboard functionality
-- Planned and implemented dashboard styling on styles.css
+- Planned and implemented dashboard styling on styles.css using Copilot
 - Tested and commited dashboard styling
+- Planned and implemented the ticket tracker data structure using Copilot
