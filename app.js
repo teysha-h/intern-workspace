@@ -3,9 +3,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!ticketsSection) return;
 
   const clearTickets = () => {
-    const existingParagraph = ticketsSection.querySelector("p");
-    if (existingParagraph) {
-      existingParagraph.remove();
+    const preserve = ticketsSection.querySelector("h2");
+    ticketsSection.innerHTML = "";
+    if (preserve) {
+      ticketsSection.appendChild(preserve);
     }
   };
 
@@ -17,49 +18,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderTickets = (tickets) => {
     clearTickets();
 
-    const list = document.createElement("div");
-    list.className = "ticket-list";
+    const table = document.createElement("table");
+    table.className = "ticket-table";
 
-    if (!Array.isArray(tickets) || tickets.length === 0) {
-      const emptyMessage = document.createElement("p");
-      emptyMessage.textContent = "No tickets available.";
-      list.appendChild(emptyMessage);
-      ticketsSection.appendChild(list);
-      return;
-    }
+    const headerRow = document.createElement("tr");
+    headerRow.innerHTML = `
+      <th>ID</th>
+      <th>Title</th>
+      <th>Owner</th>
+      <th>Status</th>
+      <th>Comments</th>
+      <th>Timestamp</th>
+    `;
 
-    tickets.forEach((ticket) => {
-      const card = document.createElement("article");
-      card.className = "ticket-card";
+    const thead = document.createElement("thead");
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
 
-      const title = document.createElement("h3");
-      title.textContent = ticket.title || "Untitled ticket";
+    const tbody = document.createElement("tbody");
+    table.appendChild(tbody);
 
-      const meta = document.createElement("div");
-      meta.className = "ticket-meta";
-      meta.innerHTML = `
-        <span><strong>Owner:</strong> ${ticket.owner || "Unassigned"}</span>
-        <span><strong>Status:</strong> ${ticket.status || "Unknown"}</span>
-        <span><strong>Updated:</strong> ${formatTimestamp(ticket.timestamp || "")}</span>
-      `;
-
-      const commentCount = Array.isArray(ticket.comments) ? ticket.comments.length : 0;
-      const comments = document.createElement("p");
-      comments.className = "ticket-comments";
-      comments.textContent = `${commentCount} comment${commentCount === 1 ? "" : "s"}`;
-
-      const idLine = document.createElement("p");
-      idLine.className = "ticket-id";
-      idLine.innerHTML = `<strong>Ticket ID:</strong> ${ticket.id || "N/A"}`;
-
-      card.appendChild(title);
-      card.appendChild(meta);
-      card.appendChild(idLine);
-      card.appendChild(comments);
-      list.appendChild(card);
-    });
-
-    ticketsSection.appendChild(list);
+    ticketsSection.appendChild(table);
   };
 
   fetch("data.json")

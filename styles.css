@@ -79,48 +79,51 @@ section {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-.ticket-list {
-  display: grid;
-  gap: 0.75rem;
+.ticket-table {
+  width: 100%;
+  border-collapse: collapse;
   margin-top: 1rem;
 }
 
-.ticket-card {
+.ticket-table th,
+.ticket-table td {
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem;
-  background: var(--surface);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  padding: 0.9rem 1rem;
+  text-align: left;
+  vertical-align: top;
 }
 
-.ticket-card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
+.ticket-table th:nth-child(1),
+.ticket-table td:nth-child(1),
+.ticket-table th:nth-child(3),
+.ticket-table td:nth-child(3),
+.ticket-table th:nth-child(4),
+.ticket-table td:nth-child(4) {
+  width: 12%;
 }
 
-.ticket-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  color: var(--muted);
-  font-size: 0.95rem;
+.ticket-table th:nth-child(2),
+.ticket-table td:nth-child(2) {
+  width: 25%;
 }
 
-.ticket-meta span {
-  display: inline-flex;
-  gap: 0.25rem;
+.ticket-table th:nth-child(5),
+.ticket-table td:nth-child(5) {
+  width: 30%;
 }
 
-.ticket-id,
-.ticket-comments {
-  margin: 0.25rem 0;
-  color: var(--muted);
-  font-size: 0.95rem;
+.ticket-table th:nth-child(6),
+.ticket-table td:nth-child(6) {
+  width: 18%;
 }
 
-.ticket-id strong {
-  font-weight: 600;
+.ticket-table th {
+  background: rgba(37, 99, 235, 0.08);
+  font-weight: 700;
+}
+
+.ticket-table tbody tr:hover {
+  background: rgba(37, 99, 235, 0.04);
 }
 
 h1,
