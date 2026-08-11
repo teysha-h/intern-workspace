@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let allTickets = [];
   let showForm = false;
+  let searchQuery = "";
   let writableFileHandle = null;
   let hasUnsyncedChanges = false;
   const storageKey = "intern-workspace-tickets";
@@ -256,6 +257,25 @@ document.addEventListener("DOMContentLoaded", () => {
     header.appendChild(newTicketButton);
     ticketsSection.appendChild(header);
 
+    const searchForm = document.createElement("form");
+    searchForm.className = "tickets-search";
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.placeholder = "Search ticket titles...";
+    searchInput.value = searchQuery;
+    searchInput.name = "query";
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(searchForm);
+      searchQuery = String(formData.get("query") || "").trim();
+      renderTickets(allTickets);
+    });
+
+    searchForm.appendChild(searchInput);
+    ticketsSection.appendChild(searchForm);
+
     if (showForm) {
       const form = document.createElement("form");
       form.className = "ticket-form";
@@ -331,6 +351,20 @@ document.addEventListener("DOMContentLoaded", () => {
       ticketsSection.appendChild(form);
     }
 
+    const query = String(searchQuery || "").trim().toLowerCase();
+    const visibleTickets = query
+      ? tickets.filter((ticket) => String(ticket.title || "").toLowerCase().includes(query))
+      : tickets;
+
+    if (visibleTickets.length === 0) {
+      const noResults = document.createElement("p");
+      noResults.className = "tickets-no-results";
+      noResults.textContent = searchQuery
+        ? "No tickets match your search query."
+        : "No tickets available.";
+      ticketsSection.appendChild(noResults);
+    }
+
     const table = document.createElement("table");
     table.className = "ticket-table";
 
@@ -350,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    tickets.forEach((ticket) => {
+    visibleTickets.forEach((ticket) => {
       const row = document.createElement("tr");
       const isEditing = editingTicketId === ticket.id;
 
