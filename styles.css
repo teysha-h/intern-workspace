@@ -201,6 +201,13 @@ section {
   box-sizing: border-box;
 }
 
+/* Sorter (sort form) should use Verdana like other controls */
+.tickets-sort,
+.tickets-sort label,
+.tickets-sort select {
+  font-family: Verdana, Geneva, sans-serif;
+}
+
 
 .ticket-form {
   display: grid;
@@ -279,9 +286,9 @@ section {
 }
 
 .ticket-form-actions .new-ticket-btn {
-  background: #dfe3e8;
-  color: #1f2937;
-  border: 1px solid #c7ced6;
+  background: #4863A0;
+  color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   font: inherit;
   font-size: 0.95rem;
@@ -292,7 +299,18 @@ section {
 }
 
 .ticket-form-actions .new-ticket-btn:hover {
-  background: #d2d7dd;
+  background: #3b4f87;
+}
+
+/* Target the tickets header 'New Ticket' button specifically */
+.tickets-header .new-ticket-btn {
+  background: #4863A0;
+  color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.tickets-header .new-ticket-btn:hover {
+  background: #3b4f87;
 }
 
 .ticket-table input,
@@ -316,7 +334,23 @@ section {
   margin-right: 0.5rem;
   margin-bottom: 0.25rem;
   padding: 0.35rem 0.85rem;
-  background: #4682b4;
+  background: #4863A0;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ticket-action-btn {
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding: 0.35rem 0.85rem;
+  background: #4863A0;
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -329,7 +363,51 @@ section {
 }
 
 .ticket-action-btn:hover {
-  background: #3a6f95;
+  background: #3b4f87;
+}
+
+.ticket-action-btn.cancel {
+  background: #f3f4f6;
+  color: #1f2937;
+  border: 1px solid #c7ced6;
+}
+
+.ticket-action-btn.cancel:hover {
+  background: #e5e7eb;
+}
+
+/* Make action buttons share the full width of the actions column
+   without increasing row height: distribute horizontally and allow
+   each button to flex evenly. */
+.ticket-table td:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+  min-width: 0;
+  padding: 0.25rem;
+}
+.ticket-table td:last-child .ticket-action-btn {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  font-weight: 400;
+}
+.ticket-table td:last-child .ticket-action-btn.cancel {
+  /* keep visual cancel styling but allow it to stretch like others */
+  flex: 1 1 0;
+  font-weight: 400;
+}
+
+/* Make Add comment and Edit (action-column non-cancel buttons) match the Delete (cancel) button color */
+.ticket-table td:last-child .ticket-action-btn:not(.cancel) {
+  background: #f3f4f6;
+  color: #1f2937;
+  border: 1px solid #c7ced6;
+}
+.ticket-table td:last-child .ticket-action-btn:not(.cancel):hover {
+  background: #e5e7eb;
 }
 
 .ticket-action-btn.cancel {
@@ -345,4 +423,16 @@ section {
 p {
   color: var(--muted);
   margin-bottom: 0;
+}
+
+/* Button typography adjustments: use Verdana, smaller size, and bold */
+button,
+input[type="button"],
+input[type="submit"],
+.new-ticket-btn,
+.ticket-action-btn,
+.sync-badge {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
