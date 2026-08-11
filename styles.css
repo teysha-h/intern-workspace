@@ -282,6 +282,36 @@ h2 {
   background: #d2d7dd;
 }
 
+.ticket-table input,
+.ticket-table select,
+.ticket-table textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.ticket-table textarea {
+  min-height: 4rem;
+  resize: vertical;
+}
+
+.ticket-action-btn {
+  margin-right: 0.5rem;
+}
+
+.ticket-action-btn.cancel {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.ticket-action-btn.cancel:hover {
+  background: #e5e7eb;
+}
+
 p {
   color: var(--muted);
   margin-bottom: 0;

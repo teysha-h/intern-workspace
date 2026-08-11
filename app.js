@@ -3,20 +3,96 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!ticketsSection) return;
 
   const syncStatusEl = document.getElementById("sync-status");
-  const connectJsonBtn = document.getElementById("connect-json-btn");
   const syncJsonBtn = document.getElementById("sync-json-btn");
 
   let allTickets = [];
   let showForm = false;
   let writableFileHandle = null;
+  let hasUnsyncedChanges = false;
   const storageKey = "intern-workspace-tickets";
+  let editingTicketId = null;
+
+  const commentsToTextarea = (comments) => {
+    if (Array.isArray(comments)) {
+      return comments.join("\n");
+    }
+    return String(comments || "");
+  };
+
+  const parseComments = (value) => {
+    return String(value || "")
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  };
 
   const setSyncStatus = (state, message = "") => {
     if (!syncStatusEl) return;
 
-    const nextClass = state === "connected" ? "sync-badge connected" : "sync-badge reconnect";
+    const nextClass = state === "synced" ? "sync-badge connected" : "sync-badge reconnect";
     syncStatusEl.className = nextClass;
-    syncStatusEl.textContent = message || (state === "connected" ? "Data Connected" : "Reconnect");
+    syncStatusEl.textContent = message || (state === "synced" ? "All changes synced" : "Unsynced changes");
+  };
+
+  const markUnsynced = () => {
+    hasUnsyncedChanges = true;
+    setSyncStatus("unsynced", "Unsynced changes");
+  };
+
+  const markSynced = () => {
+    hasUnsyncedChanges = false;
+    setSyncStatus("synced", "All changes synced");
+  };
+
+  const startEditingTicket = (ticketId) => {
+    editingTicketId = ticketId;
+    renderTickets(allTickets);
+  };
+
+  const cancelEditingTicket = () => {
+    editingTicketId = null;
+    renderTickets(allTickets);
+  };
+
+  const saveEditingTicket = async (ticketId, fields) => {
+    const { titleInput, ownerInput, statusSelect, commentsInput } = fields;
+    if (!titleInput.checkValidity() || !ownerInput.checkValidity() || !statusSelect.checkValidity()) {
+      titleInput.reportValidity();
+      ownerInput.reportValidity();
+      statusSelect.reportValidity();
+      return;
+    }
+
+    const title = String(titleInput.value || "").trim();
+    const owner = String(ownerInput.value || "").trim();
+    const status = String(statusSelect.value || "").trim();
+    const comments = parseComments(String(commentsInput.value || ""));
+
+    if (!title || !owner || !status) {
+      return;
+    }
+
+    allTickets = allTickets.map((ticket) => {
+      if (ticket.id !== ticketId) return ticket;
+      return {
+        ...ticket,
+        title,
+        owner,
+        status,
+        comments,
+      };
+    });
+
+    saveToLocalStorage(allTickets);
+    editingTicketId = null;
+
+    if (writableFileHandle) {
+      await syncToJsonFile();
+    } else {
+      markUnsynced();
+    }
+
+    renderTickets(allTickets);
   };
 
   const saveToLocalStorage = (tickets) => {
@@ -62,10 +138,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       writableFileHandle = handle;
-      setSyncStatus("connected", "Data Connected");
       return true;
     } catch (error) {
-      setSyncStatus("reconnect", "Reconnect");
+      markUnsynced();
       return false;
     }
   };
@@ -81,10 +156,10 @@ document.addEventListener("DOMContentLoaded", () => {
       await writable.write(JSON.stringify(allTickets, null, 2));
       await writable.close();
       saveToLocalStorage(allTickets);
-      setSyncStatus("connected", "Data Connected");
+      markSynced();
     } catch (error) {
       writableFileHandle = null;
-      setSyncStatus("reconnect", "Reconnect");
+      markUnsynced();
     }
   };
 
@@ -195,6 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         allTickets = [...allTickets, newTicket];
         saveToLocalStorage(allTickets);
+        markUnsynced();
         showForm = false;
         renderTickets(allTickets);
       });
@@ -220,6 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <th>Status</th>
       <th>Comments</th>
       <th>Timestamp</th>
+      <th>Actions</th>
     `;
 
     const thead = document.createElement("thead");
@@ -229,33 +306,103 @@ document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.createElement("tbody");
     tickets.forEach((ticket) => {
       const row = document.createElement("tr");
+      const isEditing = editingTicketId === ticket.id;
 
-      const idCell = document.createElement("td");
-      idCell.textContent = ticket.id || "";
-      row.appendChild(idCell);
+      const createTextCell = (value) => {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        return cell;
+      };
 
-      const titleCell = document.createElement("td");
-      titleCell.textContent = ticket.title || "";
-      row.appendChild(titleCell);
+      if (isEditing) {
+        const idCell = createTextCell(ticket.id || "");
+        row.appendChild(idCell);
 
-      const ownerCell = document.createElement("td");
-      ownerCell.textContent = ticket.owner || "";
-      row.appendChild(ownerCell);
+        const titleCell = document.createElement("td");
+        const titleInput = document.createElement("input");
+        titleInput.name = "title";
+        titleInput.required = true;
+        titleInput.value = ticket.title || "";
+        titleCell.appendChild(titleInput);
+        row.appendChild(titleCell);
 
-      const statusCell = document.createElement("td");
-      statusCell.textContent = ticket.status || "";
-      row.appendChild(statusCell);
+        const ownerCell = document.createElement("td");
+        const ownerInput = document.createElement("input");
+        ownerInput.name = "owner";
+        ownerInput.required = true;
+        ownerInput.value = ticket.owner || "";
+        ownerCell.appendChild(ownerInput);
+        row.appendChild(ownerCell);
 
-      const commentsCell = document.createElement("td");
-      const commentsValue = Array.isArray(ticket.comments)
-        ? ticket.comments.join(", ")
-        : ticket.comments || "";
-      commentsCell.textContent = commentsValue;
-      row.appendChild(commentsCell);
+        const statusCell = document.createElement("td");
+        const statusSelect = document.createElement("select");
+        statusSelect.name = "status";
+        statusSelect.required = true;
+        ["", "Open", "In Progress", "Resolved"].forEach((statusOption) => {
+          const option = document.createElement("option");
+          option.value = statusOption;
+          option.textContent = statusOption || "Select status";
+          if (ticket.status === statusOption) {
+            option.selected = true;
+          }
+          statusSelect.appendChild(option);
+        });
+        statusCell.appendChild(statusSelect);
+        row.appendChild(statusCell);
 
-      const timestampCell = document.createElement("td");
-      timestampCell.textContent = formatTimestamp(ticket.timestamp);
-      row.appendChild(timestampCell);
+        const commentsCell = document.createElement("td");
+        const commentsInput = document.createElement("textarea");
+        commentsInput.name = "comments";
+        commentsInput.value = commentsToTextarea(ticket.comments);
+        commentsCell.appendChild(commentsInput);
+        row.appendChild(commentsCell);
+
+        row.appendChild(createTextCell(formatTimestamp(ticket.timestamp)));
+
+        const actionsCell = document.createElement("td");
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.className = "new-ticket-btn ticket-action-btn";
+        saveButton.textContent = "Save";
+        saveButton.addEventListener("click", async (event) => {
+          event.preventDefault();
+          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect, commentsInput });
+        });
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.className = "new-ticket-btn ticket-action-btn cancel";
+        cancelButton.textContent = "Cancel";
+        cancelButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          cancelEditingTicket();
+        });
+
+        actionsCell.append(saveButton, cancelButton);
+        row.appendChild(actionsCell);
+      } else {
+        row.appendChild(createTextCell(ticket.id || ""));
+        row.appendChild(createTextCell(ticket.title || ""));
+        row.appendChild(createTextCell(ticket.owner || ""));
+        row.appendChild(createTextCell(ticket.status || ""));
+
+        const commentsCell = document.createElement("td");
+        commentsCell.textContent = Array.isArray(ticket.comments)
+          ? ticket.comments.join(", ")
+          : ticket.comments || "";
+        row.appendChild(commentsCell);
+
+        row.appendChild(createTextCell(formatTimestamp(ticket.timestamp)));
+
+        const actionsCell = document.createElement("td");
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "new-ticket-btn ticket-action-btn";
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => startEditingTicket(ticket.id));
+        actionsCell.appendChild(editButton);
+        row.appendChild(actionsCell);
+      }
 
       tbody.appendChild(row);
     });
@@ -264,19 +411,13 @@ document.addEventListener("DOMContentLoaded", () => {
     ticketsSection.appendChild(table);
   };
 
-  if (connectJsonBtn) {
-    connectJsonBtn.addEventListener("click", () => {
-      connectToJsonFile();
-    });
-  }
-
   if (syncJsonBtn) {
     syncJsonBtn.addEventListener("click", () => {
       syncToJsonFile();
     });
   }
 
-  setSyncStatus("reconnect", "Reconnect");
+  markSynced();
 
   const storedTickets = loadFromLocalStorage();
   if (storedTickets) {

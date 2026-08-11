@@ -1,13 +1,10 @@
 [
   {
     "id": "T-1001",
-    "title": "Update onboarding checklist",
-    "owner": "Ayesha",
+    "title": "Update",
+    "owner": "Lily",
     "status": "In Progress",
-    "comments": [
-      "Need approval from mentor",
-      "Add links to internal docs"
-    ],
+    "comments": [],
     "timestamp": "2026-08-11T09:30:00Z"
   },
   {
@@ -26,7 +23,17 @@
     "title": "Testing1",
     "owner": "Teysha",
     "status": "Open",
-    "comments": [],
+    "comments": [
+      "testing testing"
+    ],
     "timestamp": "2026-08-11T06:22:02.215Z"
+  },
+  {
+    "id": "T-1004",
+    "title": "Testing 2",
+    "owner": "Teysha",
+    "status": "Resolved",
+    "comments": [],
+    "timestamp": "2026-08-11T06:54:33.129Z"
   }
 ]
