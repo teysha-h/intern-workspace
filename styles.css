@@ -94,17 +94,20 @@ section {
 }
 
 .ticket-table th:nth-child(1),
-.ticket-table td:nth-child(1),
+.ticket-table td:nth-child(1) {
+  width: 8%;
+}
+
+.ticket-table th:nth-child(2),
+.ticket-table td:nth-child(2) {
+  width: 24%;
+}
+
 .ticket-table th:nth-child(3),
 .ticket-table td:nth-child(3),
 .ticket-table th:nth-child(4),
 .ticket-table td:nth-child(4) {
   width: 12%;
-}
-
-.ticket-table th:nth-child(2),
-.ticket-table td:nth-child(2) {
-  width: 25%;
 }
 
 .ticket-table th:nth-child(5),
@@ -114,7 +117,7 @@ section {
 
 .ticket-table th:nth-child(6),
 .ticket-table td:nth-child(6) {
-  width: 18%;
+  width: 22%;
 }
 
 .ticket-table th {
@@ -156,6 +159,92 @@ h2 {
 
 .new-ticket-btn:hover {
   background: #3a6f95;
+}
+
+.ticket-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 0.5rem 0 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.ticket-form h3 {
+  margin: 0;
+  grid-column: 1 / -1;
+}
+
+.ticket-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.ticket-form .ticket-form-field {
+  grid-column: span 1;
+}
+
+.ticket-form .ticket-form-title {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.ticket-form .ticket-form-owner {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.ticket-form .ticket-form-status {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.ticket-form .ticket-form-comments {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+.ticket-form-actions {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.ticket-form input,
+.ticket-form select,
+.ticket-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.ticket-form select {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  min-height: 2.4rem;
+}
+
+.ticket-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.ticket-form-actions .new-ticket-btn {
+  background: #dfe3e8;
+  color: #1f2937;
+  border: 1px solid #c7ced6;
+}
+
+.ticket-form-actions .new-ticket-btn:hover {
+  background: #d2d7dd;
 }
 
 p {

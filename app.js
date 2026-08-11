@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const ticketsSection = document.getElementById("tickets");
   if (!ticketsSection) return;
 
+  let allTickets = [];
+  let showForm = false;
+
   const clearTickets = () => {
     const preserve = ticketsSection.querySelector("h2");
     ticketsSection.innerHTML = "";
@@ -13,6 +16,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return Number.isNaN(date.getTime()) ? timestamp : date.toLocaleString();
+  };
+
+  const getNextTicketId = (tickets) => {
+    const numericIds = tickets
+      .map((ticket) => Number.parseInt((ticket.id || "").toString().replace(/\D/g, ""), 10))
+      .filter((value) => Number.isFinite(value));
+
+    const maxId = numericIds.length ? Math.max(...numericIds) : 0;
+    return `T-${String(maxId + 1).padStart(4, "0")}`;
   };
 
   const renderTickets = (tickets) => {
@@ -33,10 +45,85 @@ document.addEventListener("DOMContentLoaded", () => {
     newTicketButton.textContent = "New Ticket";
     newTicketButton.addEventListener("click", (event) => {
       event.preventDefault();
+      showForm = true;
+      renderTickets(allTickets);
     });
 
     header.appendChild(newTicketButton);
     ticketsSection.appendChild(header);
+
+    if (showForm) {
+      const form = document.createElement("form");
+      form.className = "ticket-form";
+      form.innerHTML = `
+        <h3>Create New Ticket</h3>
+        <label class="ticket-form-field ticket-form-title">
+          Title
+          <input name="title" required />
+        </label>
+        <label class="ticket-form-field ticket-form-owner">
+          Owner
+          <input name="owner" required />
+        </label>
+        <label class="ticket-form-field ticket-form-status">
+          Status
+          <select name="status" required>
+            <option value="">Select status</option>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </label>
+        <label class="ticket-form-field ticket-form-comments">
+          Comments
+          <textarea name="comments"></textarea>
+        </label>
+        <div class="ticket-form-actions">
+          <button type="submit" class="new-ticket-btn">Add Ticket</button>
+          <button type="button" class="new-ticket-btn">Cancel</button>
+        </div>
+      `;
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        if (!form.reportValidity()) {
+          return;
+        }
+
+        const formData = new FormData(form);
+        const title = String(formData.get("title") || "").trim();
+        const owner = String(formData.get("owner") || "").trim();
+        const status = String(formData.get("status") || "").trim();
+        const comments = String(formData.get("comments") || "").trim();
+
+        if (!title || !owner || !status) {
+          return;
+        }
+
+        const newTicket = {
+          id: getNextTicketId(allTickets),
+          title,
+          owner,
+          status,
+          comments: comments ? [comments] : [],
+          timestamp: new Date().toISOString()
+        };
+
+        allTickets = [...allTickets, newTicket];
+        showForm = false;
+        renderTickets(allTickets);
+      });
+
+      const cancelButton = form.querySelector('button[type="button"]');
+      cancelButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        showForm = false;
+        renderTickets(allTickets);
+      });
+
+      ticketsSection.appendChild(form);
+    }
 
     const table = document.createElement("table");
     table.className = "ticket-table";
@@ -56,8 +143,40 @@ document.addEventListener("DOMContentLoaded", () => {
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    table.appendChild(tbody);
+    tickets.forEach((ticket) => {
+      const row = document.createElement("tr");
 
+      const idCell = document.createElement("td");
+      idCell.textContent = ticket.id || "";
+      row.appendChild(idCell);
+
+      const titleCell = document.createElement("td");
+      titleCell.textContent = ticket.title || "";
+      row.appendChild(titleCell);
+
+      const ownerCell = document.createElement("td");
+      ownerCell.textContent = ticket.owner || "";
+      row.appendChild(ownerCell);
+
+      const statusCell = document.createElement("td");
+      statusCell.textContent = ticket.status || "";
+      row.appendChild(statusCell);
+
+      const commentsCell = document.createElement("td");
+      const commentsValue = Array.isArray(ticket.comments)
+        ? ticket.comments.join(", ")
+        : ticket.comments || "";
+      commentsCell.textContent = commentsValue;
+      row.appendChild(commentsCell);
+
+      const timestampCell = document.createElement("td");
+      timestampCell.textContent = formatTimestamp(ticket.timestamp);
+      row.appendChild(timestampCell);
+
+      tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
     ticketsSection.appendChild(table);
   };
 
@@ -68,7 +187,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       return response.json();
     })
-    .then((data) => renderTickets(data))
+    .then((data) => {
+      allTickets = data;
+      renderTickets(allTickets);
+    })
     .catch(() => {
       clearTickets();
       const errorMessage = document.createElement("p");
