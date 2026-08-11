@@ -6,5 +6,60 @@
     "status": "Resolved",
     "comments": [],
     "timestamp": "2026-08-11T08:18:56.223Z"
+  },
+  {
+    "id": "T-0004",
+    "title": "syncing test",
+    "owner": "peter",
+    "status": "In Progress",
+    "comments": [],
+    "timestamp": "2026-08-11T09:01:57.216Z"
+  },
+  {
+    "id": "T-0005",
+    "title": "sorting test",
+    "owner": "teysha",
+    "status": "Resolved",
+    "comments": [
+      {
+        "text": "this is a sorting test",
+        "timestamp": "2026-08-11T09:02:18.796Z"
+      }
+    ],
+    "timestamp": "2026-08-11T09:02:18.796Z"
+  },
+  {
+    "id": "T-0006",
+    "title": "searching test",
+    "owner": "lily",
+    "status": "Open",
+    "comments": [
+      {
+        "text": "this is a test for the search functionality",
+        "timestamp": "2026-08-11T09:02:43.482Z"
+      },
+      {
+        "text": "adding a comment to see if it still works",
+        "timestamp": "2026-08-11T09:03:56.923Z"
+      },
+      {
+        "text": "adding another comment",
+        "timestamp": "2026-08-11T09:04:03.306Z"
+      }
+    ],
+    "timestamp": "2026-08-11T09:02:43.482Z"
+  },
+  {
+    "id": "T-0007",
+    "title": "ticket tracker test",
+    "owner": "teysha",
+    "status": "In Progress",
+    "comments": [
+      {
+        "text": "this is a ticket tracker test",
+        "timestamp": "2026-08-11T09:03:40.649Z"
+      }
+    ],
+    "timestamp": "2026-08-11T09:03:40.649Z"
   }
 ]
