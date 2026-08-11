@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allTickets = [];
   let showForm = false;
   let searchQuery = "";
+  let sortMode = "default";
   let writableFileHandle = null;
   let hasUnsyncedChanges = false;
   const storageKey = "intern-workspace-tickets";
@@ -232,6 +233,46 @@ document.addEventListener("DOMContentLoaded", () => {
     return `T-${String(maxId + 1).padStart(4, "0")}`;
   };
 
+  const sortStatusOrder = {
+    Open: 0,
+    "In Progress": 1,
+    Resolved: 2,
+  };
+
+  const parseTicketId = (ticketId) => {
+    const numeric = Number.parseInt(String(ticketId || "").replace(/\D/g, ""), 10);
+    return Number.isFinite(numeric) ? numeric : 0;
+  };
+
+  const sortTickets = (tickets) => {
+    const copied = [...tickets];
+
+    if (sortMode === "owner") {
+      return copied.sort((a, b) => {
+        const ownerA = String(a.owner || "").toLowerCase();
+        const ownerB = String(b.owner || "").toLowerCase();
+        const ownerCompare = ownerA.localeCompare(ownerB);
+        if (ownerCompare !== 0) {
+          return ownerCompare;
+        }
+        return parseTicketId(a.id) - parseTicketId(b.id);
+      });
+    }
+
+    if (sortMode === "status") {
+      return copied.sort((a, b) => {
+        const statusA = sortStatusOrder[String(a.status || "")] ?? Number.MAX_SAFE_INTEGER;
+        const statusB = sortStatusOrder[String(b.status || "")] ?? Number.MAX_SAFE_INTEGER;
+        if (statusA !== statusB) {
+          return statusA - statusB;
+        }
+        return parseTicketId(a.id) - parseTicketId(b.id);
+      });
+    }
+
+    return copied.sort((a, b) => parseTicketId(a.id) - parseTicketId(b.id));
+  };
+
   const renderTickets = (tickets) => {
     clearTickets();
 
@@ -256,6 +297,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     header.appendChild(newTicketButton);
     ticketsSection.appendChild(header);
+
+    const sortForm = document.createElement("form");
+    sortForm.className = "tickets-sort";
+
+    const sortLabel = document.createElement("label");
+    sortLabel.textContent = "Sort by ";
+
+    const sortSelect = document.createElement("select");
+    sortSelect.name = "sortMode";
+    [
+      { value: "default", label: "Default (ID order)" },
+      { value: "owner", label: "Owner" },
+      { value: "status", label: "Status" },
+    ].forEach((optionData) => {
+      const option = document.createElement("option");
+      option.value = optionData.value;
+      option.textContent = optionData.label;
+      if (sortMode === optionData.value) {
+        option.selected = true;
+      }
+      sortSelect.appendChild(option);
+    });
+
+    sortForm.addEventListener("change", (event) => {
+      event.preventDefault();
+      const formData = new FormData(sortForm);
+      sortMode = String(formData.get("sortMode") || "default");
+      renderTickets(allTickets);
+    });
+
+    sortLabel.appendChild(sortSelect);
+    sortForm.append(sortLabel);
+    ticketsSection.appendChild(sortForm);
 
     const searchForm = document.createElement("form");
     searchForm.className = "tickets-search";
@@ -352,9 +426,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const query = String(searchQuery || "").trim().toLowerCase();
-    const visibleTickets = query
+    const filteredTickets = query
       ? tickets.filter((ticket) => String(ticket.title || "").toLowerCase().includes(query))
       : tickets;
+
+    const visibleTickets = sortTickets(filteredTickets);
 
     if (visibleTickets.length === 0) {
       const noResults = document.createElement("p");

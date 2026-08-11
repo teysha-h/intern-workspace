@@ -1,15 +1,35 @@
 [
   {
-    "id": "T-1004",
-    "title": "Testing 2",
-    "owner": "Peter",
+    "id": "T-0001",
+    "title": "test",
+    "owner": "teysha",
     "status": "Open",
     "comments": [
       {
-        "text": "Initial ticket created",
-        "timestamp": "2026-08-11T07:10:32.971Z"
+        "text": "comment",
+        "timestamp": "2026-08-11T08:20:56.083Z"
+      },
+      {
+        "text": "adding a comment",
+        "timestamp": "2026-08-11T08:21:00.499Z"
       }
     ],
-    "timestamp": "2026-08-11T07:10:32.971Z"
+    "timestamp": "2026-08-11T08:14:43.924Z"
+  },
+  {
+    "id": "T-0002",
+    "title": "hello",
+    "owner": "peter",
+    "status": "In Progress",
+    "comments": [],
+    "timestamp": "2026-08-11T08:18:27.472Z"
+  },
+  {
+    "id": "T-0003",
+    "title": "computer not working",
+    "owner": "peter",
+    "status": "Resolved",
+    "comments": [],
+    "timestamp": "2026-08-11T08:18:56.223Z"
   }
 ]
