@@ -120,12 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     saveToLocalStorage(allTickets);
     editingTicketId = null;
-
-    if (writableFileHandle) {
-      await syncToJsonFile();
-    } else {
-      markUnsynced();
-    }
+    markUnsynced();
 
     renderTickets(allTickets);
   };
@@ -133,12 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteTicket = async (ticketId) => {
     allTickets = allTickets.filter((ticket) => ticket.id !== ticketId);
     saveToLocalStorage(allTickets);
-
-    if (writableFileHandle) {
-      await syncToJsonFile();
-    } else {
-      markUnsynced();
-    }
+    markUnsynced();
 
     renderTickets(allTickets);
   };
@@ -555,11 +545,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           saveToLocalStorage(allTickets);
-          if (writableFileHandle) {
-            await syncToJsonFile();
-          } else {
-            markUnsynced();
-          }
+          markUnsynced();
           renderTickets(allTickets);
         });
 
@@ -616,11 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           saveToLocalStorage(allTickets);
-          if (writableFileHandle) {
-            await syncToJsonFile();
-          } else {
-            markUnsynced();
-          }
+          markUnsynced();
           renderTickets(allTickets);
         });
 
