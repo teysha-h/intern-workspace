@@ -4,7 +4,12 @@
     "title": "Testing 2",
     "owner": "Peter",
     "status": "Open",
-    "comments": [],
+    "comments": [
+      {
+        "text": "Initial ticket created",
+        "timestamp": "2026-08-11T07:10:32.971Z"
+      }
+    ],
     "timestamp": "2026-08-11T07:10:32.971Z"
   }
 ]

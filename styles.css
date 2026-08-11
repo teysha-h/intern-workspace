@@ -130,70 +130,65 @@ section {
 
 .ticket-table th:nth-child(1),
 .ticket-table td:nth-child(1) {
-  width: 9%;
+  width: 8%;
+  white-space: nowrap;
 }
 
 .ticket-table th:nth-child(2),
 .ticket-table td:nth-child(2) {
-  width: 23%;
+  width: 18%;
 }
 
 .ticket-table th:nth-child(3),
-.ticket-table td:nth-child(3),
+.ticket-table td:nth-child(3) {
+  width: 10%;
+}
+
 .ticket-table th:nth-child(4),
 .ticket-table td:nth-child(4) {
-  width: 12%;
+  width: 9%;
 }
 
 .ticket-table th:nth-child(5),
 .ticket-table td:nth-child(5) {
-  width: 30%;
+  width: 44%;
 }
 
 .ticket-table th:nth-child(6),
 .ticket-table td:nth-child(6) {
-  width: 22%;
+  width: 12%;
 }
 
-.ticket-table th {
-  background: rgba(37, 99, 235, 0.08);
-  font-weight: 700;
+.ticket-comments {
+  display: grid;
+  gap: 0.65rem;
 }
 
-.ticket-table tbody tr:hover {
-  background: rgba(37, 99, 235, 0.04);
-}
-
-h1,
-h2 {
-  color: #0f172a;
-  margin-top: 0;
-}
-
-.tickets-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0 0 0.75rem;
-}
-
-.tickets-header h2 {
+.ticket-comment-item {
   margin: 0;
 }
 
 .new-ticket-btn {
-  background: #4682b4;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.55rem 0.9rem;
-  cursor: pointer;
-  font-weight: 600;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.35rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .new-ticket-btn:hover {
   background: #3a6f95;
+}
+
+.ticket-table tbody td:last-child {
+  text-align: center;
+}
+
+.ticket-table thead th:last-child {
+  text-align: center;
 }
 
 .ticket-form {
@@ -276,6 +271,13 @@ h2 {
   background: #dfe3e8;
   color: #1f2937;
   border: 1px solid #c7ced6;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .ticket-form-actions .new-ticket-btn:hover {
@@ -302,12 +304,27 @@ h2 {
 .ticket-action-btn {
   margin-right: 0.5rem;
   margin-bottom: 0.25rem;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.85rem;
+  background: #4682b4;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ticket-action-btn:hover {
+  background: #3a6f95;
 }
 
 .ticket-action-btn.cancel {
   background: #f3f4f6;
   color: #1f2937;
+  border: 1px solid #c7ced6;
 }
 
 .ticket-action-btn.cancel:hover {

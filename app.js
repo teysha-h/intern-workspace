@@ -12,18 +12,50 @@ document.addEventListener("DOMContentLoaded", () => {
   const storageKey = "intern-workspace-tickets";
   let editingTicketId = null;
 
-  const commentsToTextarea = (comments) => {
+  const normalizeComments = (comments, fallbackTimestamp) => {
+    if (!comments) return [];
     if (Array.isArray(comments)) {
-      return comments.join("\n");
+      return comments
+        .map((comment) => {
+          if (typeof comment === "string") {
+            return { text: comment, timestamp: fallbackTimestamp || new Date().toISOString() };
+          }
+          if (comment && typeof comment === "object" && typeof comment.text === "string") {
+            return {
+              text: String(comment.text),
+              timestamp: comment.timestamp || fallbackTimestamp || new Date().toISOString(),
+            };
+          }
+          return null;
+        })
+        .filter((comment) => comment && comment.text.length > 0);
     }
-    return String(comments || "");
+    return [];
   };
 
-  const parseComments = (value) => {
-    return String(value || "")
-      .split(/\r?\n|,/)
+  const normalizeTicket = (ticket) => ({
+    ...ticket,
+    comments: normalizeComments(ticket.comments, ticket.timestamp),
+  });
+
+  const commentsToTextarea = (comments) => {
+    if (!Array.isArray(comments)) return "";
+    return comments.map((comment) => comment.text).join("\n");
+  };
+
+  const parseComments = (value, existingComments = []) => {
+    const lines = String(value || "")
+      .split(/\r?\n/)
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
+
+    return lines.map((text) => {
+      const existing = existingComments.find((comment) => comment.text === text);
+      return {
+        text,
+        timestamp: existing?.timestamp || new Date().toISOString(),
+      };
+    });
   };
 
   const setSyncStatus = (state, message = "") => {
@@ -55,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const saveEditingTicket = async (ticketId, fields) => {
-    const { titleInput, ownerInput, statusSelect, commentsInput } = fields;
+    const { titleInput, ownerInput, statusSelect } = fields;
     if (!titleInput.checkValidity() || !ownerInput.checkValidity() || !statusSelect.checkValidity()) {
       titleInput.reportValidity();
       ownerInput.reportValidity();
@@ -66,7 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const title = String(titleInput.value || "").trim();
     const owner = String(ownerInput.value || "").trim();
     const status = String(statusSelect.value || "").trim();
-    const comments = parseComments(String(commentsInput.value || ""));
+    const currentTicket = allTickets.find((ticket) => ticket.id === ticketId);
+    const comments = currentTicket?.comments || [];
 
     if (!title || !owner || !status) {
       return;
@@ -122,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          return parsed;
+          return parsed.map(normalizeTicket);
         }
       }
     } catch (error) {
@@ -266,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const title = String(formData.get("title") || "").trim();
         const owner = String(formData.get("owner") || "").trim();
         const status = String(formData.get("status") || "").trim();
-        const comments = String(formData.get("comments") || "").trim();
+        const commentText = String(formData.get("comments") || "").trim();
 
         if (!title || !owner || !status) {
           return;
@@ -277,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
           title,
           owner,
           status,
-          comments: comments ? [comments] : [],
+          comments: commentText ? [{ text: commentText, timestamp: new Date().toISOString() }] : [],
           timestamp: new Date().toISOString(),
         };
 
@@ -308,7 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <th>Owner</th>
       <th>Status</th>
       <th>Comments</th>
-      <th>Timestamp</th>
+      <th>Date Created</th>
       <th>Actions</th>
     `;
 
@@ -364,10 +397,21 @@ document.addEventListener("DOMContentLoaded", () => {
         row.appendChild(statusCell);
 
         const commentsCell = document.createElement("td");
-        const commentsInput = document.createElement("textarea");
-        commentsInput.name = "comments";
-        commentsInput.value = commentsToTextarea(ticket.comments);
-        commentsCell.appendChild(commentsInput);
+        const commentsContainer = document.createElement("div");
+        commentsContainer.className = "ticket-comments";
+        if (Array.isArray(ticket.comments) && ticket.comments.length) {
+          ticket.comments.forEach((comment) => {
+            const commentLine = document.createElement("div");
+            commentLine.className = "ticket-comment-item";
+            commentLine.textContent = `${comment.text} (${formatTimestamp(comment.timestamp)})`;
+            commentsContainer.appendChild(commentLine);
+          });
+        } else {
+          const noComments = document.createElement("span");
+          noComments.textContent = "No comments yet";
+          commentsContainer.appendChild(noComments);
+        }
+        commentsCell.appendChild(commentsContainer);
         row.appendChild(commentsCell);
 
         row.appendChild(createTextCell(formatTimestamp(ticket.timestamp)));
@@ -379,7 +423,34 @@ document.addEventListener("DOMContentLoaded", () => {
         saveButton.textContent = "Save";
         saveButton.addEventListener("click", async (event) => {
           event.preventDefault();
-          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect, commentsInput });
+          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect });
+        });
+
+        const addCommentButton = document.createElement("button");
+        addCommentButton.type = "button";
+        addCommentButton.className = "new-ticket-btn ticket-action-btn";
+        addCommentButton.textContent = "Add comment";
+        addCommentButton.addEventListener("click", async (event) => {
+          event.preventDefault();
+          const commentText = String(prompt("Enter a new comment:") || "").trim();
+          if (!commentText) return;
+
+          const newComment = { text: commentText, timestamp: new Date().toISOString() };
+          allTickets = allTickets.map((item) => {
+            if (item.id !== ticket.id) return item;
+            return {
+              ...item,
+              comments: Array.isArray(item.comments) ? [...item.comments, newComment] : [newComment],
+            };
+          });
+
+          saveToLocalStorage(allTickets);
+          if (writableFileHandle) {
+            await syncToJsonFile();
+          } else {
+            markUnsynced();
+          }
+          renderTickets(allTickets);
         });
 
         const cancelButton = document.createElement("button");
@@ -391,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cancelEditingTicket();
         });
 
-        actionsCell.append(saveButton, cancelButton);
+        actionsCell.append(saveButton, addCommentButton, cancelButton);
         row.appendChild(actionsCell);
       } else {
         row.appendChild(createTextCell(ticket.id || ""));
@@ -400,14 +471,49 @@ document.addEventListener("DOMContentLoaded", () => {
         row.appendChild(createTextCell(ticket.status || ""));
 
         const commentsCell = document.createElement("td");
-        commentsCell.textContent = Array.isArray(ticket.comments)
-          ? ticket.comments.join(", ")
-          : ticket.comments || "";
+        const commentsContainer = document.createElement("div");
+        commentsContainer.className = "ticket-comments";
+        if (Array.isArray(ticket.comments) && ticket.comments.length) {
+          ticket.comments.forEach((comment) => {
+            const commentLine = document.createElement("div");
+            commentLine.className = "ticket-comment-item";
+            commentLine.textContent = `${comment.text} (${formatTimestamp(comment.timestamp)})`;
+            commentsContainer.appendChild(commentLine);
+          });
+        }
+        commentsCell.appendChild(commentsContainer);
         row.appendChild(commentsCell);
 
         row.appendChild(createTextCell(formatTimestamp(ticket.timestamp)));
 
         const actionsCell = document.createElement("td");
+        const addCommentButton = document.createElement("button");
+        addCommentButton.type = "button";
+        addCommentButton.className = "new-ticket-btn ticket-action-btn";
+        addCommentButton.textContent = "Add comment";
+        addCommentButton.addEventListener("click", async (event) => {
+          event.preventDefault();
+          const commentText = String(prompt("Enter a new comment:") || "").trim();
+          if (!commentText) return;
+
+          const newComment = { text: commentText, timestamp: new Date().toISOString() };
+          allTickets = allTickets.map((item) => {
+            if (item.id !== ticket.id) return item;
+            return {
+              ...item,
+              comments: Array.isArray(item.comments) ? [...item.comments, newComment] : [newComment],
+            };
+          });
+
+          saveToLocalStorage(allTickets);
+          if (writableFileHandle) {
+            await syncToJsonFile();
+          } else {
+            markUnsynced();
+          }
+          renderTickets(allTickets);
+        });
+
         const editButton = document.createElement("button");
         editButton.type = "button";
         editButton.className = "new-ticket-btn ticket-action-btn";
@@ -423,7 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
           await deleteTicket(ticket.id);
         });
 
-        actionsCell.append(editButton, deleteButton);
+        actionsCell.append(addCommentButton, editButton, deleteButton);
         row.appendChild(actionsCell);
       }
 
@@ -443,7 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
   markSynced();
 
   const storedTickets = loadFromLocalStorage();
-  if (storedTickets) {
+  if (storedTickets !== null) {
     allTickets = storedTickets;
     renderTickets(allTickets);
   } else {
@@ -455,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then((data) => {
-        allTickets = Array.isArray(data) ? data : [];
+        allTickets = Array.isArray(data) ? data.map(normalizeTicket) : [];
         saveToLocalStorage(allTickets);
         renderTickets(allTickets);
       })
