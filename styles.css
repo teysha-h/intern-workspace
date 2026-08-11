@@ -130,12 +130,12 @@ section {
 
 .ticket-table th:nth-child(1),
 .ticket-table td:nth-child(1) {
-  width: 8%;
+  width: 9%;
 }
 
 .ticket-table th:nth-child(2),
 .ticket-table td:nth-child(2) {
-  width: 24%;
+  width: 23%;
 }
 
 .ticket-table th:nth-child(3),
@@ -301,6 +301,8 @@ h2 {
 
 .ticket-action-btn {
   margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding: 0.35rem 0.75rem;
 }
 
 .ticket-action-btn.cancel {

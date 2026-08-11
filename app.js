@@ -95,6 +95,19 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTickets(allTickets);
   };
 
+  const deleteTicket = async (ticketId) => {
+    allTickets = allTickets.filter((ticket) => ticket.id !== ticketId);
+    saveToLocalStorage(allTickets);
+
+    if (writableFileHandle) {
+      await syncToJsonFile();
+    } else {
+      markUnsynced();
+    }
+
+    renderTickets(allTickets);
+  };
+
   const saveToLocalStorage = (tickets) => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(tickets));
@@ -400,7 +413,17 @@ document.addEventListener("DOMContentLoaded", () => {
         editButton.className = "new-ticket-btn ticket-action-btn";
         editButton.textContent = "Edit";
         editButton.addEventListener("click", () => startEditingTicket(ticket.id));
-        actionsCell.appendChild(editButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "new-ticket-btn ticket-action-btn cancel";
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", async () => {
+          if (!confirm("Delete this ticket?")) return;
+          await deleteTicket(ticket.id);
+        });
+
+        actionsCell.append(editButton, deleteButton);
         row.appendChild(actionsCell);
       }
 
