@@ -2,8 +2,91 @@ document.addEventListener("DOMContentLoaded", () => {
   const ticketsSection = document.getElementById("tickets");
   if (!ticketsSection) return;
 
+  const syncStatusEl = document.getElementById("sync-status");
+  const connectJsonBtn = document.getElementById("connect-json-btn");
+  const syncJsonBtn = document.getElementById("sync-json-btn");
+
   let allTickets = [];
   let showForm = false;
+  let writableFileHandle = null;
+  const storageKey = "intern-workspace-tickets";
+
+  const setSyncStatus = (state, message = "") => {
+    if (!syncStatusEl) return;
+
+    const nextClass = state === "connected" ? "sync-badge connected" : "sync-badge reconnect";
+    syncStatusEl.className = nextClass;
+    syncStatusEl.textContent = message || (state === "connected" ? "Data Connected" : "Reconnect");
+  };
+
+  const saveToLocalStorage = (tickets) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(tickets));
+    } catch (error) {
+      console.warn("Unable to save tickets locally", error);
+    }
+  };
+
+  const loadFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to load tickets from local storage", error);
+    }
+    return null;
+  };
+
+  const connectToJsonFile = async () => {
+    if (!("showOpenFilePicker" in window)) {
+      setSyncStatus("reconnect", "Reconnect");
+      return false;
+    }
+
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [
+          {
+            description: "JSON Files",
+            accept: {
+              "application/json": [".json"],
+            },
+          },
+        ],
+      });
+
+      writableFileHandle = handle;
+      setSyncStatus("connected", "Data Connected");
+      return true;
+    } catch (error) {
+      setSyncStatus("reconnect", "Reconnect");
+      return false;
+    }
+  };
+
+  const syncToJsonFile = async () => {
+    if (!writableFileHandle) {
+      const connected = await connectToJsonFile();
+      if (!connected) return;
+    }
+
+    try {
+      const writable = await writableFileHandle.createWritable();
+      await writable.write(JSON.stringify(allTickets, null, 2));
+      await writable.close();
+      saveToLocalStorage(allTickets);
+      setSyncStatus("connected", "Data Connected");
+    } catch (error) {
+      writableFileHandle = null;
+      setSyncStatus("reconnect", "Reconnect");
+    }
+  };
 
   const clearTickets = () => {
     const preserve = ticketsSection.querySelector("h2");
@@ -107,10 +190,11 @@ document.addEventListener("DOMContentLoaded", () => {
           owner,
           status,
           comments: comments ? [comments] : [],
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
 
         allTickets = [...allTickets, newTicket];
+        saveToLocalStorage(allTickets);
         showForm = false;
         renderTickets(allTickets);
       });
@@ -180,21 +264,42 @@ document.addEventListener("DOMContentLoaded", () => {
     ticketsSection.appendChild(table);
   };
 
-  fetch("data.json")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      allTickets = data;
-      renderTickets(allTickets);
-    })
-    .catch(() => {
-      clearTickets();
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "Unable to load ticket data.";
-      ticketsSection.appendChild(errorMessage);
+  if (connectJsonBtn) {
+    connectJsonBtn.addEventListener("click", () => {
+      connectToJsonFile();
     });
+  }
+
+  if (syncJsonBtn) {
+    syncJsonBtn.addEventListener("click", () => {
+      syncToJsonFile();
+    });
+  }
+
+  setSyncStatus("reconnect", "Reconnect");
+
+  const storedTickets = loadFromLocalStorage();
+  if (storedTickets) {
+    allTickets = storedTickets;
+    renderTickets(allTickets);
+  } else {
+    fetch("data.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        allTickets = Array.isArray(data) ? data : [];
+        saveToLocalStorage(allTickets);
+        renderTickets(allTickets);
+      })
+      .catch(() => {
+        clearTickets();
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent = "Unable to load ticket data.";
+        ticketsSection.appendChild(errorMessage);
+      });
+  }
 });
