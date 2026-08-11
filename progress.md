@@ -79,5 +79,6 @@ What not to add yet:
 
 ## Tue - 11th August 2026
 ### Completed:
-- Planned and implemented Dashboard cards linked to navbar 
+- Planned and implemented dashboard cards linked to navbar 
 - Tested and commited dashboard
+- Planned and implemented dashboard styling on styles.css

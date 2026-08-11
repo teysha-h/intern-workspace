@@ -1,0 +1,91 @@
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --muted: #5b6472;
+  --accent: #2563eb;
+  --border: #dce3ea;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+
+header {
+  width: 100%;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 0;
+}
+
+header > h1,
+header > nav {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+header > h1 {
+  padding: 0 1.25rem 0.5rem;
+}
+
+header > nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  padding: 0 1.25rem;
+}
+
+nav a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+main > section#dashboard,
+main > section#tickets,
+main > section#todo {
+  grid-column: 1 / -1;
+}
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem 1.4rem;
+  margin: 0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+h1,
+h2 {
+  color: #0f172a;
+  margin-top: 0;
+}
+
+p {
+  color: var(--muted);
+  margin-bottom: 0;
+}
