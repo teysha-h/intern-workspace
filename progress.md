@@ -52,11 +52,16 @@ What to include:
 
 
 ## Tue - 11th August 2026
-### Completed:
-- Planned and implemented dashboard cards linked to navbar using Copilot
-- Tested and commited dashboard functionality
-- Planned and implemented dashboard styling on styles.css using Copilot
-- Tested and commited dashboard styling
-- Planned and implemented the ticket tracker data structure and design using Copilot (changing app.js, data.json and styles.css)
-- Planned and implemented the display of an empty ticket table using Copilot
-- Planned and implemented an inert 'new ticket' button
+### Completed tasks:
+- Planned, implemented, tested and commited dashboard cards linked to the navbar 
+- Implemented the general appearance of the dashboard using styles.css
+- Planned, implemented, tested and commited the ITSD ticket tracker section card (Section 8.2)
+- Edited the design for the ITSD ticket tracker section card
+
+### Completed sections at this point:
+(8.1) Dashboard
+(8.2) ITSD ticket tracker
+
+### Next steps:
+- Complete Section 8.3: Shared to-do
+- Create branch for section and test entirely before merging with main
