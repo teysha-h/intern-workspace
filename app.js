@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const writable = await writableFileHandle.createWritable();
-      const payload = { tickets: allTickets, todos: window._sharedTodos || [] };
+      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments };
       await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
       saveToLocalStorage(allTickets);
@@ -1256,6 +1256,96 @@ document.addEventListener("DOMContentLoaded", () => {
       linksData = local;
     }
     renderLinks();
+  })();
+
+  // ===== Onboarding Resources =====
+  const onboardingSection = document.getElementById("onboarding");
+  const onboardingStorageKey = "intern-workspace-onboarding";
+  let onboardingDocuments = [
+    { name: "Onboarding Resource 1", url: "docs/Onboarding resource 1.pdf" },
+    { name: "Onboarding Resource 2", url: "docs/Onboarding resource 2.pdf" },
+    { name: "Onboarding Resource 3", url: "docs/Onboarding resource 3.pdf" },
+    { name: "Rules and Regulations 1", url: "docs/Rules and regulations 1.pdf" },
+    { name: "Rules and Regulations 2", url: "docs/Rules and regulations 2.pdf" },
+  ];
+
+  const saveOnboardingToLocalStorage = () => {
+    try {
+      localStorage.setItem(onboardingStorageKey, JSON.stringify(onboardingDocuments));
+    } catch (error) {
+      console.warn("Unable to save onboarding documents locally", error);
+    }
+  };
+
+  const loadOnboardingFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(onboardingStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to load onboarding documents from local storage", error);
+    }
+    return null;
+  };
+
+  const renderOnboarding = () => {
+    if (!onboardingSection) return;
+
+    const preserve = onboardingSection.querySelector("h2");
+    onboardingSection.innerHTML = "";
+    if (preserve) onboardingSection.appendChild(preserve);
+
+    const container = document.createElement("div");
+    container.className = "onboarding-documents";
+
+    if (!Array.isArray(onboardingDocuments) || onboardingDocuments.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No onboarding resources yet.";
+      container.appendChild(empty);
+    } else {
+      onboardingDocuments.forEach((doc) => {
+        const item = document.createElement("div");
+        item.className = "onboarding-doc-item";
+
+        const anchor = document.createElement("a");
+        anchor.href = doc.url;
+        anchor.target = "_blank";
+        anchor.rel = "noopener noreferrer";
+        anchor.textContent = doc.name || doc.url;
+        item.appendChild(anchor);
+
+        container.appendChild(item);
+      });
+    }
+
+    onboardingSection.appendChild(container);
+  };
+
+  // Initialize onboarding: prefer localStorage, then data.json, else defaults
+  (function initOnboarding() {
+    if (!onboardingSection) return;
+    const local = loadOnboardingFromLocalStorage();
+    if (local !== null) {
+      onboardingDocuments = local;
+      renderOnboarding();
+      return;
+    }
+    fetch("data.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.onboarding)) {
+          onboardingDocuments = data.onboarding;
+          saveOnboardingToLocalStorage();
+        }
+        renderOnboarding();
+      })
+      .catch(() => {
+        renderOnboarding();
+      });
   })();
 
 });
