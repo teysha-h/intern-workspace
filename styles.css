@@ -202,9 +202,36 @@ section {
 }
 
 /* Sorter (sort form) should use Verdana like other controls */
-.tickets-sort,
-.tickets-sort label,
+.tickets-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.03);
+  font-family: Verdana, Geneva, sans-serif;
+}
+
+.tickets-sort label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: Verdana, Geneva, sans-serif;
+}
+
 .tickets-sort select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
   font-family: Verdana, Geneva, sans-serif;
 }
 
@@ -310,6 +337,24 @@ section {
 }
 
 .tickets-header .new-ticket-btn:hover {
+  background: #3b4f87;
+}
+
+/* Shared task 'Add' button matches the 'New Ticket' button design */
+.todo-form-actions .new-ticket-btn {
+  background: #4863A0;
+  color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.todo-form-actions .new-ticket-btn:hover {
   background: #3b4f87;
 }
 
