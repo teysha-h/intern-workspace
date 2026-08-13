@@ -65,3 +65,13 @@ What to include:
 ### Next steps:
 - Complete Section 8.3: Shared to-do
 - Create branch for section and test entirely before merging with main
+
+
+## Wed - 12th August 2026
+### Completed tasks:
+- Bug tested ITSD ticket tracker and rest of webpage 
+
+
+## Thu - 13th August 2026
+### Completed:
+- 

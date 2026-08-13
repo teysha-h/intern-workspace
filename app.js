@@ -191,9 +191,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const writable = await writableFileHandle.createWritable();
-      await writable.write(JSON.stringify(allTickets, null, 2));
+      const payload = { tickets: allTickets, todos: window._sharedTodos || [] };
+      await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
       saveToLocalStorage(allTickets);
+      try {
+        localStorage.setItem("intern-workspace-shared-todos", JSON.stringify({ todos: window._sharedTodos || [] }));
+      } catch (e) {
+        console.warn("Unable to save todos to localStorage during sync", e);
+      }
       markSynced();
     } catch (error) {
       writableFileHandle = null;
@@ -639,23 +645,43 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   markSynced();
-
+  // Adapted to support `data.json` as either an array (legacy) or an object
+  // with shape: { tickets: [...], todos: [...] }.
   const storedTickets = loadFromLocalStorage();
   if (storedTickets !== null) {
     allTickets = storedTickets;
     renderTickets(allTickets);
-  } else {
+  }
+
+  // If tickets aren't in localStorage, load from data.json (supports legacy array or new object shape)
+  if (storedTickets === null) {
     fetch("data.json")
       .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
         return response.json();
       })
       .then((data) => {
-        allTickets = Array.isArray(data) ? data.map(normalizeTicket) : [];
+        if (Array.isArray(data)) {
+          // legacy: array of tickets
+          allTickets = data.map(normalizeTicket);
+          // no todos present in legacy file
+          window._sharedTodos = window._sharedTodos || [];
+        } else if (data && typeof data === "object") {
+          allTickets = Array.isArray(data.tickets) ? data.tickets.map(normalizeTicket) : [];
+          window._sharedTodos = Array.isArray(data.todos) ? data.todos : window._sharedTodos || [];
+          try {
+            localStorage.setItem("intern-workspace-shared-todos", JSON.stringify({ todos: window._sharedTodos }));
+          } catch (e) {
+            console.warn("Unable to persist todos from data.json", e);
+          }
+        } else {
+          allTickets = [];
+          window._sharedTodos = window._sharedTodos || [];
+        }
+
         saveToLocalStorage(allTickets);
         renderTickets(allTickets);
+        if (typeof renderTodos === "function") renderTodos(window._sharedTodos || []);
       })
       .catch(() => {
         clearTickets();
@@ -664,4 +690,178 @@ document.addEventListener("DOMContentLoaded", () => {
         ticketsSection.appendChild(errorMessage);
       });
   }
+
+  // Load todos from localStorage if present (local override)
+  const todoStorageKey = "intern-workspace-shared-todos";
+  const loadTodosFromLocalStorage = () => {
+    try {
+      const raw = localStorage.getItem(todoStorageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.todos)) return parsed.todos;
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      console.warn("Unable to load todos from localStorage", e);
+    }
+    return null;
+  };
+
+  const saveTodosToLocalStorage = (todos) => {
+    try {
+      localStorage.setItem(todoStorageKey, JSON.stringify({ todos }));
+    } catch (e) {
+      console.warn("Unable to save todos to localStorage", e);
+    }
+  };
+
+  const formatDueDate = (iso) => {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
+  };
+
+  const nextTodoId = (todos) => {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+    const numericIds = (todos || [])
+      .map((t) => Number.parseInt(String(t.id || "").replace(/\D/g, ""), 10))
+      .filter(Number.isFinite);
+    const maxId = numericIds.length ? Math.max(...numericIds) : 0;
+    return String(maxId + 1);
+  };
+
+  const todoSection = document.getElementById("todo");
+
+  const renderTodos = (todos) => {
+    if (!todoSection) return;
+    const preserve = todoSection.querySelector("h2");
+    todoSection.innerHTML = "";
+    if (preserve) todoSection.appendChild(preserve);
+
+    const container = document.createElement("div");
+    container.className = "todo-container";
+
+    if (!Array.isArray(todos) || todos.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No shared tasks yet.";
+      container.appendChild(empty);
+    } else {
+      const list = document.createElement("ul");
+      list.className = "todo-list";
+      todos.forEach((t) => {
+        const li = document.createElement("li");
+        li.className = "todo-item";
+
+        const label = document.createElement("div");
+        label.className = "todo-label";
+        label.textContent = t.task || "";
+
+        const meta = document.createElement("div");
+        meta.className = "todo-meta";
+        meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+
+        const actions = document.createElement("div");
+        actions.className = "todo-actions";
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.textContent = t.completed ? "Mark open" : "Mark done";
+        toggle.addEventListener("click", () => {
+          t.completed = !t.completed;
+          saveTodosToLocalStorage(todos);
+          markUnsynced();
+          renderTodos(todos);
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Delete";
+        remove.addEventListener("click", () => {
+          if (!confirm("Delete this task?")) return;
+          const idx = todos.findIndex((item) => item.id === t.id);
+          if (idx >= 0) {
+            todos.splice(idx, 1);
+            saveTodosToLocalStorage(todos);
+            markUnsynced();
+            renderTodos(todos);
+          }
+        });
+
+        actions.append(toggle, remove);
+        li.append(label, meta, actions);
+        if (t.completed) li.classList.add("completed");
+        list.appendChild(li);
+      });
+      container.appendChild(list);
+    }
+
+    const form = document.createElement("form");
+    form.className = "todo-form";
+    form.innerHTML = `
+      <h3>Add shared task</h3>
+      <label>Task<input name="task" required /></label>
+      <label>Owner<input name="owner" required /></label>
+      <label>Due date<input name="dueDate" type="date" /></label>
+      <div class="todo-form-actions">
+        <button type="submit" class="new-ticket-btn">Add</button>
+      </div>
+    `;
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const task = String(fd.get("task") || "").trim();
+      const owner = String(fd.get("owner") || "").trim();
+      const dueDateInput = String(fd.get("dueDate") || "").trim();
+      if (!task || !owner) return;
+      const todosList = Array.isArray(window._sharedTodos) ? window._sharedTodos : [];
+      const id = nextTodoId(todosList);
+      const dueIso = dueDateInput ? new Date(dueDateInput).toISOString() : "";
+      const newTodo = { id, task, owner, dueDate: dueIso, completed: false, createdAt: new Date().toISOString() };
+      todosList.push(newTodo);
+      window._sharedTodos = todosList;
+      saveTodosToLocalStorage(todosList);
+      markUnsynced();
+      renderTodos(todosList);
+      form.reset();
+    });
+
+    container.appendChild(form);
+    todoSection.appendChild(container);
+  };
+
+  // Initialize todos: prefer localStorage, then data.json, else empty
+  (function initTodos() {
+    if (!todoSection) return;
+    const local = loadTodosFromLocalStorage();
+    if (local !== null) {
+      window._sharedTodos = local;
+      renderTodos(local);
+      return;
+    }
+    // fallback: try fetching data.json if tickets were not already loaded from it
+    fetch("data.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) {
+          window._sharedTodos = [];
+          renderTodos([]);
+          return;
+        }
+        if (Array.isArray(data)) {
+          // legacy array-only file: tickets already handled above when not in localStorage
+          window._sharedTodos = [];
+          renderTodos([]);
+          return;
+        }
+        // object shape
+        window._sharedTodos = Array.isArray(data.todos) ? data.todos : [];
+        saveTodosToLocalStorage(window._sharedTodos);
+        renderTodos(window._sharedTodos);
+      })
+      .catch(() => {
+        window._sharedTodos = [];
+        renderTodos([]);
+      });
+  })();
+
 });
