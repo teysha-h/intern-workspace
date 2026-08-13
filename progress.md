@@ -76,6 +76,15 @@ What to include:
 ### Completed tasks:
 - Planned, implemented, tested and commited the shared to-do section card and all its features (Section 8.3)
 - Implemented the appearance of the shared to-do section and its buttons using styles.css
+
+### Completed sections at this point:
+(8.1) Dashboard
+(8.2) ITSD ticket tracker
+(8.3) Shared to-do
+
+
+## Fri - 14th August 2026
+### Completed tasks:
 - Planned, implemented, tested and commited the important links section card (Section 8.4)
 - Debugged styles.css as there were some errors, then commited the changes 
 
@@ -85,9 +94,15 @@ What to include:
 (8.3) Shared to-do
 (8.4) Important links 
 
-
-## Fri - 14th August 2026
+## Mon - 17th August 2026
 ### Completed tasks:
-- 
+- Planned, implemented, tested and commited the onboarding resources section card (Section 8.5)
+- Decided that the onboarding documents would group based on the first word of each document
+- Debugged the whole page to ensure its running smoothly so far
 
 ### Completed sections at this point:
+(8.1) Dashboard
+(8.2) ITSD ticket tracker
+(8.3) Shared to-do
+(8.4) Important links 
+(8.5) Onboarding resources
