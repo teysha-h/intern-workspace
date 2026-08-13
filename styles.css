@@ -401,6 +401,36 @@ section {
 }
 
 /* Shared todo list styling: remove bullets, add spacing, left-side toggle */
+.todo-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.todo-filters label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.todo-filters select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
 ul.todo-list {
   list-style: none;
   margin: 0;

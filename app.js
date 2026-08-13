@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const storageKey = "intern-workspace-tickets";
   let editingTicketId = null;
   let editingTodoId = null;
+  let todoOwnerFilter = "";
+  let todoStatusFilter = "";
 
   const normalizeComments = (comments, fallbackTimestamp) => {
     if (!comments) return [];
@@ -757,114 +759,176 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No shared tasks yet.";
       container.appendChild(empty);
     } else {
-      const list = document.createElement("ul");
-      list.className = "todo-list";
-      todos.forEach((t) => {
-        const li = document.createElement("li");
-        li.className = "todo-item";
-        const isEditing = editingTodoId === t.id;
+      // Filter controls
+      const filterBar = document.createElement("div");
+      filterBar.className = "todo-filters";
 
-        const actions = document.createElement("div");
-        actions.className = "todo-actions";
+      const ownerLabel = document.createElement("label");
+      ownerLabel.textContent = "Owner ";
+      const ownerSelect = document.createElement("select");
+      ownerSelect.name = "todoOwnerFilter";
+      const owners = [...new Set((todos || []).map((t) => t.owner || "").filter(Boolean))].sort();
+      const ownerOptions = [{ value: "", label: "All owners" }, ...owners.map((o) => ({ value: o, label: o }))];
+      ownerOptions.forEach((opt) => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (todoOwnerFilter === opt.value) option.selected = true;
+        ownerSelect.appendChild(option);
+      });
+      ownerSelect.addEventListener("change", () => {
+        todoOwnerFilter = ownerSelect.value;
+        renderTodos(todos);
+      });
+      ownerLabel.appendChild(ownerSelect);
+      filterBar.appendChild(ownerLabel);
 
-        if (isEditing) {
-          const fields = document.createElement("div");
-          fields.className = "todo-edit-fields";
+      const statusLabel = document.createElement("label");
+      statusLabel.textContent = "Status ";
+      const statusSelect = document.createElement("select");
+      statusSelect.name = "todoStatusFilter";
+      [
+        { value: "", label: "All statuses" },
+        { value: "open", label: "Open" },
+        { value: "completed", label: "Completed" },
+      ].forEach((opt) => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (todoStatusFilter === opt.value) option.selected = true;
+        statusSelect.appendChild(option);
+      });
+      statusSelect.addEventListener("change", () => {
+        todoStatusFilter = statusSelect.value;
+        renderTodos(todos);
+      });
+      statusLabel.appendChild(statusSelect);
+      filterBar.appendChild(statusLabel);
 
-          const taskInput = document.createElement("input");
-          taskInput.name = "task";
-          taskInput.placeholder = "Task";
-          taskInput.value = t.task || "";
+      container.appendChild(filterBar);
 
-          const ownerInput = document.createElement("input");
-          ownerInput.name = "owner";
-          ownerInput.placeholder = "Owner";
-          ownerInput.value = t.owner || "";
+      // Apply filters
+      const filteredTodos = (todos || []).filter((t) => {
+        if (todoOwnerFilter && (t.owner || "") !== todoOwnerFilter) return false;
+        if (todoStatusFilter === "open" && t.completed) return false;
+        if (todoStatusFilter === "completed" && !t.completed) return false;
+        return true;
+      });
 
-          const dueDateInput = document.createElement("input");
-          dueDateInput.name = "dueDate";
-          dueDateInput.type = "date";
-          dueDateInput.value = toDateInputValue(t.dueDate);
+      if (filteredTodos.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No shared tasks match the current filters.";
+        container.appendChild(empty);
+      } else {
+        const list = document.createElement("ul");
+        list.className = "todo-list";
+        filteredTodos.forEach((t) => {
+          const li = document.createElement("li");
+          li.className = "todo-item";
+          const isEditing = editingTodoId === t.id;
 
-          fields.append(taskInput, ownerInput, dueDateInput);
+          const actions = document.createElement("div");
+          actions.className = "todo-actions";
 
-          const saveButton = document.createElement("button");
-          saveButton.type = "button";
-          saveButton.textContent = "Save";
-          saveButton.addEventListener("click", () => {
-            const task = String(taskInput.value || "").trim();
-            const owner = String(ownerInput.value || "").trim();
-            if (!task || !owner) return;
-            const dueIso = dueDateInput.value ? new Date(dueDateInput.value).toISOString() : "";
-            t.task = task;
-            t.owner = owner;
-            t.dueDate = dueIso;
-            editingTodoId = null;
-            saveTodosToLocalStorage(todos);
-            markUnsynced();
-            renderTodos(todos);
-          });
+          if (isEditing) {
+            const fields = document.createElement("div");
+            fields.className = "todo-edit-fields";
 
-          const cancelButton = document.createElement("button");
-          cancelButton.type = "button";
-          cancelButton.textContent = "Cancel";
-          cancelButton.addEventListener("click", () => {
-            editingTodoId = null;
-            renderTodos(todos);
-          });
+            const taskInput = document.createElement("input");
+            taskInput.name = "task";
+            taskInput.placeholder = "Task";
+            taskInput.value = t.task || "";
 
-          actions.append(saveButton, cancelButton);
-          li.append(actions, fields);
-        } else {
-          const label = document.createElement("div");
-          label.className = "todo-label";
-          label.textContent = t.task || "";
+            const ownerInput = document.createElement("input");
+            ownerInput.name = "owner";
+            ownerInput.placeholder = "Owner";
+            ownerInput.value = t.owner || "";
 
-          const meta = document.createElement("div");
-          meta.className = "todo-meta";
-          meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+            const dueDateInput = document.createElement("input");
+            dueDateInput.name = "dueDate";
+            dueDateInput.type = "date";
+            dueDateInput.value = toDateInputValue(t.dueDate);
 
-          const toggle = document.createElement("button");
-          toggle.type = "button";
-          toggle.className = "todo-done-btn";
-          toggle.textContent = t.completed ? "Mark open" : "Mark done";
-          toggle.addEventListener("click", () => {
-            t.completed = !t.completed;
-            saveTodosToLocalStorage(todos);
-            markUnsynced();
-            renderTodos(todos);
-          });
+            fields.append(taskInput, ownerInput, dueDateInput);
 
-          const editButton = document.createElement("button");
-          editButton.type = "button";
-          editButton.textContent = "Edit";
-          editButton.addEventListener("click", () => {
-            editingTodoId = t.id;
-            renderTodos(todos);
-          });
-
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.textContent = "Delete";
-          remove.addEventListener("click", () => {
-            if (!confirm("Delete this task?")) return;
-            const idx = todos.findIndex((item) => item.id === t.id);
-            if (idx >= 0) {
-              todos.splice(idx, 1);
+            const saveButton = document.createElement("button");
+            saveButton.type = "button";
+            saveButton.textContent = "Save";
+            saveButton.addEventListener("click", () => {
+              const task = String(taskInput.value || "").trim();
+              const owner = String(ownerInput.value || "").trim();
+              if (!task || !owner) return;
+              const dueIso = dueDateInput.value ? new Date(dueDateInput.value).toISOString() : "";
+              t.task = task;
+              t.owner = owner;
+              t.dueDate = dueIso;
+              editingTodoId = null;
               saveTodosToLocalStorage(todos);
               markUnsynced();
               renderTodos(todos);
-            }
-          });
+            });
 
-          actions.append(toggle, editButton, remove);
-          li.append(label, meta, actions);
-          if (t.completed) li.classList.add("completed");
-        }
+            const cancelButton = document.createElement("button");
+            cancelButton.type = "button";
+            cancelButton.textContent = "Cancel";
+            cancelButton.addEventListener("click", () => {
+              editingTodoId = null;
+              renderTodos(todos);
+            });
 
-        list.appendChild(li);
-      });
-      container.appendChild(list);
+            actions.append(saveButton, cancelButton);
+            li.append(actions, fields);
+          } else {
+            const label = document.createElement("div");
+            label.className = "todo-label";
+            label.textContent = t.task || "";
+
+            const meta = document.createElement("div");
+            meta.className = "todo-meta";
+            meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "todo-done-btn";
+            toggle.textContent = t.completed ? "Mark open" : "Mark done";
+            toggle.addEventListener("click", () => {
+              t.completed = !t.completed;
+              saveTodosToLocalStorage(todos);
+              markUnsynced();
+              renderTodos(todos);
+            });
+
+            const editButton = document.createElement("button");
+            editButton.type = "button";
+            editButton.textContent = "Edit";
+            editButton.addEventListener("click", () => {
+              editingTodoId = t.id;
+              renderTodos(todos);
+            });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.textContent = "Delete";
+            remove.addEventListener("click", () => {
+              if (!confirm("Delete this task?")) return;
+              const idx = todos.findIndex((item) => item.id === t.id);
+              if (idx >= 0) {
+                todos.splice(idx, 1);
+                saveTodosToLocalStorage(todos);
+                markUnsynced();
+                renderTodos(todos);
+              }
+            });
+
+            actions.append(toggle, editButton, remove);
+            li.append(label, meta, actions);
+            if (t.completed) li.classList.add("completed");
+          }
+
+          list.appendChild(li);
+        });
+        container.appendChild(list);
+      }
     }
 
     const form = document.createElement("form");
