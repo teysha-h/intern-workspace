@@ -1307,18 +1307,34 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No onboarding resources yet.";
       container.appendChild(empty);
     } else {
+      const groups = new Map();
       onboardingDocuments.forEach((doc) => {
-        const item = document.createElement("div");
-        item.className = "onboarding-doc-item";
+        const name = String(doc.name || doc.url || "");
+        const category = name.trim().split(/\s+/)[0] || "Other";
+        if (!groups.has(category)) {
+          groups.set(category, []);
+        }
+        groups.get(category).push(doc);
+      });
 
-        const anchor = document.createElement("a");
-        anchor.href = doc.url;
-        anchor.target = "_blank";
-        anchor.rel = "noopener noreferrer";
-        anchor.textContent = doc.name || doc.url;
-        item.appendChild(anchor);
+      groups.forEach((docs, category) => {
+        const heading = document.createElement("h3");
+        heading.textContent = category;
+        container.appendChild(heading);
 
-        container.appendChild(item);
+        docs.forEach((doc) => {
+          const item = document.createElement("div");
+          item.className = "onboarding-doc-item";
+
+          const anchor = document.createElement("a");
+          anchor.href = doc.url;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.textContent = doc.name || doc.url;
+          item.appendChild(anchor);
+
+          container.appendChild(item);
+        });
       });
     }
 
