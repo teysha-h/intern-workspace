@@ -1001,4 +1001,261 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   })();
 
+  // ===== Important Links =====
+  const linksSection = document.getElementById("links");
+  const linksContainer = linksSection ? linksSection.querySelector(".links-container") : null;
+  const linksStorageKey = "intern-workspace-links";
+  let linksData = [
+    {
+      category: "Internal Tools",
+      links: [
+        { name: "GitHub", url: "https://github.com" },
+        { name: "Google Drive", url: "https://drive.google.com" },
+        { name: "Slack", url: "https://slack.com" },
+        { name: "Email", url: "https://mail.google.com" },
+      ],
+    },
+    {
+      category: "Documentation",
+      links: [
+        { name: "MDN Web Docs", url: "https://developer.mozilla.org" },
+        { name: "W3Schools", url: "https://www.w3schools.com" },
+        { name: "Stack Overflow", url: "https://stackoverflow.com" },
+      ],
+    },
+    {
+      category: "Support",
+      links: [
+        { name: "IT Help Desk", url: "https://support.google.com" },
+        { name: "HR Portal", url: "https://www.microsoft.com" },
+      ],
+    },
+  ];
+  let editingLink = null; // { categoryIndex, linkIndex }
+  let writableHtmlHandle = null;
+
+  const saveLinksToLocalStorage = () => {
+    try {
+      localStorage.setItem(linksStorageKey, JSON.stringify(linksData));
+    } catch (error) {
+      console.warn("Unable to save links locally", error);
+    }
+  };
+
+  const loadLinksFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(linksStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to load links from local storage", error);
+    }
+    return null;
+  };
+
+  const connectToHtmlFile = async () => {
+    if (!("showOpenFilePicker" in window)) {
+      setSyncStatus("reconnect", "Reconnect");
+      return false;
+    }
+
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [
+          {
+            description: "HTML Files",
+            accept: {
+              "text/html": [".html"],
+            },
+          },
+        ],
+      });
+
+      writableHtmlHandle = handle;
+      return true;
+    } catch (error) {
+      markUnsynced();
+      return false;
+    }
+  };
+
+  const writeLinksToHtml = async () => {
+    if (!writableHtmlHandle) {
+      const connected = await connectToHtmlFile();
+      if (!connected) return;
+    }
+
+    try {
+      const file = await writableHtmlHandle.getFile();
+      const text = await file.text();
+
+      // Build the links HTML that should live inside the #links section
+      const linksHtml = linksData
+        .map(
+          (category) => `
+          <div class="link-category">
+            <h3>${category.category}</h3>
+            <div class="link-list">
+              ${category.links
+                .map(
+                  (link) => `
+                <div class="link-item">
+                  <a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.name}</a>
+                </div>`
+                )
+                .join("")}
+            </div>
+          </div>`
+        )
+        .join("");
+
+      const sectionStart = text.indexOf('<section id="links">');
+      const sectionEnd = text.indexOf("</section>", sectionStart);
+      if (sectionStart === -1 || sectionEnd === -1) {
+        throw new Error("Could not locate the links section in index.html");
+      }
+
+      const updatedText =
+        text.slice(0, sectionStart) +
+        `<section id="links">\n        <h2>Important Links</h2>\n        <div class="links-container">${linksHtml}\n        </div>\n      </section>` +
+        text.slice(sectionEnd + "</section>".length);
+
+      const writable = await writableHtmlHandle.createWritable();
+      await writable.write(updatedText);
+      await writable.close();
+      markSynced();
+    } catch (error) {
+      writableHtmlHandle = null;
+      markUnsynced();
+    }
+  };
+
+  const renderLinks = () => {
+    if (!linksSection || !linksContainer) return;
+
+    const preserve = linksSection.querySelector("h2");
+    linksSection.innerHTML = "";
+    if (preserve) linksSection.appendChild(preserve);
+
+    const container = document.createElement("div");
+    container.className = "links-container";
+
+    linksData.forEach((category, categoryIndex) => {
+      const categoryDiv = document.createElement("div");
+      categoryDiv.className = "link-category";
+
+      const heading = document.createElement("h3");
+      heading.textContent = category.category;
+      categoryDiv.appendChild(heading);
+
+      const list = document.createElement("div");
+      list.className = "link-list";
+
+      category.links.forEach((link, linkIndex) => {
+        const isEditing =
+          editingLink && editingLink.categoryIndex === categoryIndex && editingLink.linkIndex === linkIndex;
+
+        if (isEditing) {
+          const form = document.createElement("form");
+          form.className = "link-edit-form";
+
+          const nameLabel = document.createElement("label");
+          nameLabel.textContent = "Link Name";
+          const nameInput = document.createElement("input");
+          nameInput.name = "name";
+          nameInput.required = true;
+          nameInput.value = link.name || "";
+          nameLabel.appendChild(nameInput);
+
+          const urlLabel = document.createElement("label");
+          urlLabel.textContent = "URL";
+          const urlInput = document.createElement("input");
+          urlInput.name = "url";
+          urlInput.type = "url";
+          urlInput.required = true;
+          urlInput.value = link.url || "";
+          urlLabel.appendChild(urlInput);
+
+          const actions = document.createElement("div");
+          actions.className = "link-edit-actions";
+
+          const saveButton = document.createElement("button");
+          saveButton.type = "submit";
+          saveButton.className = "new-ticket-btn";
+          saveButton.textContent = "Save";
+          saveButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            const name = String(nameInput.value || "").trim();
+            const url = String(urlInput.value || "").trim();
+            if (!name || !url) return;
+            linksData[categoryIndex].links[linkIndex] = { name, url };
+            editingLink = null;
+            saveLinksToLocalStorage();
+            markUnsynced();
+            renderLinks();
+            writeLinksToHtml();
+          });
+
+          const cancelButton = document.createElement("button");
+          cancelButton.type = "button";
+          cancelButton.className = "new-ticket-btn";
+          cancelButton.textContent = "Cancel";
+          cancelButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            editingLink = null;
+            renderLinks();
+          });
+
+          actions.append(saveButton, cancelButton);
+          form.append(nameLabel, urlLabel, actions);
+          list.appendChild(form);
+        } else {
+          const item = document.createElement("div");
+          item.className = "link-item";
+
+          const anchor = document.createElement("a");
+          anchor.href = link.url;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.textContent = link.name;
+          item.appendChild(anchor);
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "new-ticket-btn";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            editingLink = { categoryIndex, linkIndex };
+            renderLinks();
+          });
+
+          item.appendChild(editButton);
+          list.appendChild(item);
+        }
+      });
+
+      categoryDiv.appendChild(list);
+      container.appendChild(categoryDiv);
+    });
+
+    linksSection.appendChild(container);
+  };
+
+  // Initialize links: prefer localStorage, then default data
+  (function initLinks() {
+    if (!linksSection) return;
+    const local = loadLinksFromLocalStorage();
+    if (local !== null) {
+      linksData = local;
+    }
+    renderLinks();
+  })();
+
 });
