@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let hasUnsyncedChanges = false;
   const storageKey = "intern-workspace-tickets";
   let editingTicketId = null;
+  let editingTodoId = null;
 
   const normalizeComments = (comments, fallbackTimestamp) => {
     if (!comments) return [];
@@ -719,6 +720,16 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
   };
 
+  const toDateInputValue = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const nextTodoId = (todos) => {
     if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
       return crypto.randomUUID();
@@ -751,44 +762,106 @@ document.addEventListener("DOMContentLoaded", () => {
       todos.forEach((t) => {
         const li = document.createElement("li");
         li.className = "todo-item";
-
-        const label = document.createElement("div");
-        label.className = "todo-label";
-        label.textContent = t.task || "";
-
-        const meta = document.createElement("div");
-        meta.className = "todo-meta";
-        meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+        const isEditing = editingTodoId === t.id;
 
         const actions = document.createElement("div");
         actions.className = "todo-actions";
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.textContent = t.completed ? "Mark open" : "Mark done";
-        toggle.addEventListener("click", () => {
-          t.completed = !t.completed;
-          saveTodosToLocalStorage(todos);
-          markUnsynced();
-          renderTodos(todos);
-        });
 
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.textContent = "Delete";
-        remove.addEventListener("click", () => {
-          if (!confirm("Delete this task?")) return;
-          const idx = todos.findIndex((item) => item.id === t.id);
-          if (idx >= 0) {
-            todos.splice(idx, 1);
+        if (isEditing) {
+          const fields = document.createElement("div");
+          fields.className = "todo-edit-fields";
+
+          const taskInput = document.createElement("input");
+          taskInput.name = "task";
+          taskInput.placeholder = "Task";
+          taskInput.value = t.task || "";
+
+          const ownerInput = document.createElement("input");
+          ownerInput.name = "owner";
+          ownerInput.placeholder = "Owner";
+          ownerInput.value = t.owner || "";
+
+          const dueDateInput = document.createElement("input");
+          dueDateInput.name = "dueDate";
+          dueDateInput.type = "date";
+          dueDateInput.value = toDateInputValue(t.dueDate);
+
+          fields.append(taskInput, ownerInput, dueDateInput);
+
+          const saveButton = document.createElement("button");
+          saveButton.type = "button";
+          saveButton.textContent = "Save";
+          saveButton.addEventListener("click", () => {
+            const task = String(taskInput.value || "").trim();
+            const owner = String(ownerInput.value || "").trim();
+            if (!task || !owner) return;
+            const dueIso = dueDateInput.value ? new Date(dueDateInput.value).toISOString() : "";
+            t.task = task;
+            t.owner = owner;
+            t.dueDate = dueIso;
+            editingTodoId = null;
             saveTodosToLocalStorage(todos);
             markUnsynced();
             renderTodos(todos);
-          }
-        });
+          });
 
-        actions.append(toggle, remove);
-        li.append(label, meta, actions);
-        if (t.completed) li.classList.add("completed");
+          const cancelButton = document.createElement("button");
+          cancelButton.type = "button";
+          cancelButton.textContent = "Cancel";
+          cancelButton.addEventListener("click", () => {
+            editingTodoId = null;
+            renderTodos(todos);
+          });
+
+          actions.append(saveButton, cancelButton);
+          li.append(actions, fields);
+        } else {
+          const label = document.createElement("div");
+          label.className = "todo-label";
+          label.textContent = t.task || "";
+
+          const meta = document.createElement("div");
+          meta.className = "todo-meta";
+          meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "todo-done-btn";
+          toggle.textContent = t.completed ? "Mark open" : "Mark done";
+          toggle.addEventListener("click", () => {
+            t.completed = !t.completed;
+            saveTodosToLocalStorage(todos);
+            markUnsynced();
+            renderTodos(todos);
+          });
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", () => {
+            editingTodoId = t.id;
+            renderTodos(todos);
+          });
+
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.textContent = "Delete";
+          remove.addEventListener("click", () => {
+            if (!confirm("Delete this task?")) return;
+            const idx = todos.findIndex((item) => item.id === t.id);
+            if (idx >= 0) {
+              todos.splice(idx, 1);
+              saveTodosToLocalStorage(todos);
+              markUnsynced();
+              renderTodos(todos);
+            }
+          });
+
+          actions.append(toggle, editButton, remove);
+          li.append(label, meta, actions);
+          if (t.completed) li.classList.add("completed");
+        }
+
         list.appendChild(li);
       });
       container.appendChild(list);

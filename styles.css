@@ -400,6 +400,96 @@ section {
   font-weight: 400;
 }
 
+/* Shared todo list styling: remove bullets, add spacing, left-side toggle */
+ul.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todo-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-auto-rows: auto;
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px; /* small gap between tasks */
+  border-radius: 6px;
+  background: transparent;
+}
+
+.todo-item > .todo-actions {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.todo-item > .todo-label {
+  grid-column: 2;
+  grid-row: 1;
+  font-weight: 600;
+}
+
+.todo-item > .todo-meta {
+  grid-column: 2;
+  grid-row: 2;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Unified small, thin buttons for todo actions */
+.todo-item > .todo-actions button {
+  width: 100%;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  color: #333;
+}
+
+/* Green styling for the mark-as-done button */
+.todo-item > .todo-actions button.todo-done-btn {
+  background-color: #dff7d9;
+  border: 1px solid #aee6a8;
+  color: #0e5a19;
+}
+
+.todo-item > .todo-actions button:hover {
+  opacity: 0.95;
+}
+
+/* Edit mode fields */
+.todo-edit-fields {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  gap: 4px;
+}
+
+.todo-edit-fields input {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* When a todo is completed, slightly dim the label */
+.todo-item.completed .todo-label {
+  text-decoration: line-through;
+  color: #7a7a7a;
+}
+
 /* Make Add comment and Edit (action-column non-cancel buttons) match the Delete (cancel) button color */
 .ticket-table td:last-child .ticket-action-btn:not(.cancel) {
   background: #f3f4f6;
