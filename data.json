@@ -78,5 +78,12 @@
       "completed": false,
       "createdAt": "2026-08-13T01:23:36.051Z"
     }
+  ],
+  "onboarding": [
+    { "name": "Onboarding Resource 1", "url": "docs/Onboarding resource 1.pdf" },
+    { "name": "Onboarding Resource 2", "url": "docs/Onboarding resource 2.pdf" },
+    { "name": "Onboarding Resource 3", "url": "docs/Onboarding resource 3.pdf" },
+    { "name": "Rules and Regulations 1", "url": "docs/Rules and regulations 1.pdf" },
+    { "name": "Rules and Regulations 2", "url": "docs/Rules and regulations 2.pdf" }
   ]
 }

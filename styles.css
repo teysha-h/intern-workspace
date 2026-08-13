@@ -653,3 +653,29 @@ input[type="submit"],
 .link-edit-actions .new-ticket-btn:hover {
   background: #3b4f87;
 }
+
+/* Onboarding Resources: document list with gaps between items, no bullets */
+.onboarding-documents {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.onboarding-doc-item {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.onboarding-doc-item a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.onboarding-doc-item a:hover {
+  text-decoration: underline;
+}
