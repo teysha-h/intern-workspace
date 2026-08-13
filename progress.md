@@ -73,5 +73,21 @@ What to include:
 
 
 ## Thu - 13th August 2026
-### Completed:
+### Completed tasks:
+- Planned, implemented, tested and commited the shared to-do section card and all its features (Section 8.3)
+- Implemented the appearance of the shared to-do section and its buttons using styles.css
+- Planned, implemented, tested and commited the important links section card (Section 8.4)
+- Debugged styles.css as there were some errors, then commited the changes 
+
+### Completed sections at this point:
+(8.1) Dashboard
+(8.2) ITSD ticket tracker
+(8.3) Shared to-do
+(8.4) Important links 
+
+
+## Fri - 14th August 2026
+### Completed tasks:
 - 
+
+### Completed sections at this point:
