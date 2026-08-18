@@ -71,12 +71,22 @@ document.addEventListener("DOMContentLoaded", () => {
     syncStatusEl.textContent = message || (state === "synced" ? "All changes synced" : "Unsynced changes");
   };
 
-  const markUnsynced = () => {
+    const markUnsynced = () => {
+    try {
+      localStorage.setItem("intern-workspace-unsynced", "true");
+    } catch (e) {
+      console.warn("Unable to save unsynced status to localStorage", e);
+    }
     hasUnsyncedChanges = true;
     setSyncStatus("unsynced", "Unsynced changes");
   };
 
-  const markSynced = () => {
+    const markSynced = () => {
+    try {
+      localStorage.setItem("intern-workspace-unsynced", "false");
+    } catch (e) {
+      console.warn("Unable to save unsynced status to localStorage", e);
+    }
     hasUnsyncedChanges = false;
     setSyncStatus("synced", "All changes synced");
   };
@@ -660,7 +670,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  markSynced();
   // Adapted to support `data.json` as either an array (legacy) or an object
   // with shape: { tickets: [...], todos: [...] }.
   const storedTickets = loadFromLocalStorage();
