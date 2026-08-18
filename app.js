@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const writable = await writableFileHandle.createWritable();
-      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments };
+      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments, faq: faqItems };
       await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
       saveToLocalStorage(allTickets);
@@ -1362,6 +1362,29 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => {
         renderOnboarding();
       });
+  })();
+
+  // ===== FAQ =====
+  // FAQ data lives in data.json and is mirrored here as a fallback so the
+  // "Save JSON" sync always persists it. The FAQ section UI is still a
+  // placeholder; rendering will be added in a later step.
+  let faqItems = [
+    { question: "How do I submit an IT support ticket?", answer: "Go to the Ticket Tracker section and use the form to create a new ticket. Include a clear title and describe the issue so the support team can help you quickly." },
+    { question: "Where can I find the onboarding resources?", answer: "Open the Onboarding section from the navigation bar. All documents are listed there and open in a new tab when clicked." },
+    { question: "What should I do if my computer is not working?", answer: "Create a ticket in the Ticket Tracker with the details of the problem. You can also reach the IT help desk through the Support links in the Important Links section." },
+    { question: "How do I reset my password?", answer: "Contact the IT Service Desk. You can find the IT Help Desk link under Support in the Important Links section." },
+    { question: "Where can I find the company rules and regulations?", answer: "They are available in the Onboarding section under Rules and Regulations. Click a document to open it in a new tab." },
+  ];
+
+  (function initFaq() {
+    fetch("data.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.faq)) {
+          faqItems = data.faq;
+        }
+      })
+      .catch(() => {});
   })();
 
   // ===== Simple hash router: each section card behaves as its own page =====
