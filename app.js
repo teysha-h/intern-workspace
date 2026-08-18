@@ -1377,6 +1377,43 @@ document.addEventListener("DOMContentLoaded", () => {
     { question: "Where can I find the company rules and regulations?", answer: "They are available in the Onboarding section under Rules and Regulations. Click a document to open it in a new tab." },
   ];
 
+  // Persists edited FAQ items locally so edits survive page reloads while the
+  // "Save JSON" sync can still push them into the connected data.json file.
+  const faqStorageKey = "intern-workspace-faq";
+  let editingFaqIndex = null;
+
+  const saveFaqToLocalStorage = () => {
+    try {
+      localStorage.setItem(faqStorageKey, JSON.stringify(faqItems));
+    } catch (error) {
+      console.warn("Unable to save FAQ items locally", error);
+    }
+  };
+
+  const loadFaqFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(faqStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to load FAQ items from local storage", error);
+    }
+    return null;
+  };
+
+  // Toggles the collapsed/expanded state of a single FAQ answer. The "open"
+  // class on the item drives the CSS (answer hidden/shown, chevron rotated)
+  // and aria-expanded is kept in sync for assistive technology.
+  const toggleFaqAnswer = (entry) => {
+    const open = entry.classList.toggle("open");
+    const question = entry.querySelector(".faq-question");
+    if (question) question.setAttribute("aria-expanded", String(open));
+  };
+
   const renderFaq = () => {
     if (!faqSection) return;
 
@@ -1392,19 +1429,114 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No FAQ items yet.";
       container.appendChild(empty);
     } else {
-      faqItems.forEach((item) => {
+      faqItems.forEach((item, itemIndex) => {
         const entry = document.createElement("div");
-        entry.className = "faq-item";
+        entry.className = "faq-item faq-item--collapsible";
 
-        const question = document.createElement("h3");
-        question.className = "faq-question";
-        question.textContent = item.question || "";
+        // Edit mode: swap the read-only question/answer for an inline form,
+        // mirroring the editing pattern used by the Important Links card.
+        if (editingFaqIndex === itemIndex) {
+          entry.classList.add("faq-item--editing");
 
-        const answer = document.createElement("p");
-        answer.className = "faq-answer";
-        answer.textContent = item.answer || "";
+          const form = document.createElement("form");
+          form.className = "faq-edit-form";
 
-        entry.append(question, answer);
+          const questionLabel = document.createElement("label");
+          questionLabel.textContent = "Question";
+          const questionInput = document.createElement("input");
+          questionInput.name = "question";
+          questionInput.required = true;
+          questionInput.value = item.question || "";
+          questionLabel.appendChild(questionInput);
+
+          const answerLabel = document.createElement("label");
+          answerLabel.textContent = "Answer";
+          const answerInput = document.createElement("textarea");
+          answerInput.name = "answer";
+          answerInput.required = true;
+          answerInput.value = item.answer || "";
+          answerLabel.appendChild(answerInput);
+
+          const actions = document.createElement("div");
+          actions.className = "faq-edit-actions";
+
+          const saveButton = document.createElement("button");
+          saveButton.type = "submit";
+          saveButton.className = "new-ticket-btn";
+          saveButton.textContent = "Save";
+          saveButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            const question = String(questionInput.value || "").trim();
+            const answer = String(answerInput.value || "").trim();
+            if (!question || !answer) return;
+            faqItems[itemIndex] = { question, answer };
+            editingFaqIndex = null;
+            saveFaqToLocalStorage();
+            markUnsynced();
+            renderFaq();
+          });
+
+          const cancelButton = document.createElement("button");
+          cancelButton.type = "button";
+          cancelButton.className = "new-ticket-btn";
+          cancelButton.textContent = "Cancel";
+          cancelButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            editingFaqIndex = null;
+            renderFaq();
+          });
+
+          actions.append(saveButton, cancelButton);
+          form.append(questionLabel, answerLabel, actions);
+          entry.appendChild(form);
+        } else {
+          const questionRow = document.createElement("div");
+          questionRow.className = "faq-question-row";
+
+          const question = document.createElement("h3");
+          question.className = "faq-question";
+          question.textContent = item.question || "";
+
+          // Collapsible answers: each answer stays hidden until its question
+          // is activated. Clicking (or pressing Enter/Space while focused)
+          // expands and collapses the answer. The Edit button lives next to
+          // the question but outside it, so clicking Edit never toggles the
+          // answer open or closed.
+          question.setAttribute("role", "button");
+          question.setAttribute("tabindex", "0");
+          question.setAttribute("aria-expanded", "false");
+          question.addEventListener("click", () => toggleFaqAnswer(entry));
+          question.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleFaqAnswer(entry);
+            }
+          });
+
+          const actions = document.createElement("div");
+          actions.className = "faq-item-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "new-ticket-btn";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            editingFaqIndex = itemIndex;
+            renderFaq();
+          });
+
+          actions.appendChild(editButton);
+          questionRow.append(question, actions);
+
+          const answer = document.createElement("p");
+          answer.className = "faq-answer";
+          answer.textContent = item.answer || "";
+
+          entry.append(questionRow, answer);
+        }
+
         container.appendChild(entry);
       });
     }
@@ -1412,12 +1544,22 @@ document.addEventListener("DOMContentLoaded", () => {
     faqSection.appendChild(container);
   };
 
+  // Initialize FAQ: prefer localStorage (edited items persist), then data.json,
+  // else the built-in defaults above.
   (function initFaq() {
+    if (!faqSection) return;
+    const local = loadFaqFromLocalStorage();
+    if (local !== null) {
+      faqItems = local;
+      renderFaq();
+      return;
+    }
     fetch("data.json")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data.faq)) {
           faqItems = data.faq;
+          saveFaqToLocalStorage();
         }
         renderFaq();
       })
