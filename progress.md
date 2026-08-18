@@ -106,3 +106,16 @@ What to include:
 (8.3) Shared to-do
 (8.4) Important links 
 (8.5) Onboarding resources
+
+
+## Tue - 18th August 2026
+### Completed tasks:
+- Planned, implemented, tested and commited the onboarding resources section card (Section 8.5)
+
+
+### Completed sections at this point:
+(8.1) Dashboard
+(8.2) ITSD ticket tracker
+(8.3) Shared to-do
+(8.4) Important links 
+(8.5) Onboarding resources

@@ -83,7 +83,7 @@
       "task": "test test 123",
       "owner": "woody",
       "dueDate": "2026-08-13T00:00:00.000Z",
-      "completed": true,
+      "completed": false,
       "createdAt": "2026-08-13T07:33:24.527Z"
     }
   ],

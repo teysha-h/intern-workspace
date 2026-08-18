@@ -1364,4 +1364,32 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   })();
 
+  // ===== Simple hash router: each section card behaves as its own page =====
+  // No hash => show the Home section. A hash such as #tickets shows only that
+  // section card, so each card works like its own page without extra HTML files.
+  const routeSections = Array.from(document.querySelectorAll("main > section"));
+  const homeSection = document.getElementById("home");
+
+  const applyRoute = () => {
+    const hash = (window.location.hash || "").replace(/^#/, "");
+    let active = hash ? document.getElementById(hash) : null;
+
+    if (!active || !active.matches("main > section")) {
+      active = homeSection || routeSections[0] || null;
+    }
+
+    routeSections.forEach((section) => {
+      if (active && section === active) {
+        section.removeAttribute("hidden");
+        section.style.gridColumn = "1 / -1";
+      } else {
+        section.setAttribute("hidden", "");
+        section.style.gridColumn = "";
+      }
+    });
+  };
+
+  window.addEventListener("hashchange", applyRoute);
+  applyRoute();
+
 });
