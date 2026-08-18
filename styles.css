@@ -325,7 +325,8 @@ section {
 /* Shared 'New Ticket' / 'Add' button styling */
 .ticket-form-actions .new-ticket-btn,
 .tickets-header .new-ticket-btn,
-.todo-form-actions .new-ticket-btn {
+.todo-form-actions .new-ticket-btn,
+#sync-json-btn {
   background: var(--accent);
   color: var(--on-accent);
   border: 1px solid rgba(0,0,0,0.08);
@@ -333,7 +334,8 @@ section {
 
 .ticket-form-actions .new-ticket-btn:hover,
 .tickets-header .new-ticket-btn:hover,
-.todo-form-actions .new-ticket-btn:hover {
+.todo-form-actions .new-ticket-btn:hover,
+#sync-json-btn:hover {
   background: var(--accent-hover);
 }
 
