@@ -346,6 +346,19 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTickets(allTickets);
     });
 
+    // As-you-type filtering: update the query on every keystroke and re-render.
+    // Because renderTickets rebuilds the whole section, re-focus the freshly
+    // re-created input and move the cursor to the end so typing can continue.
+    searchInput.addEventListener("input", () => {
+      searchQuery = searchInput.value;
+      renderTickets(allTickets);
+      const freshInput = ticketsSection.querySelector(".tickets-search input");
+      if (freshInput) {
+        freshInput.focus();
+        freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length);
+      }
+    });
+
     searchForm.appendChild(searchInput);
     ticketsSection.appendChild(searchForm);
 
@@ -1629,6 +1642,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const formData = new FormData(searchForm);
       contactSearchQuery = String(formData.get("query") || "").trim();
       renderContacts();
+    });
+
+    // As-you-type filtering: update the query on every keystroke and re-render.
+    // Because renderContacts rebuilds the whole section, re-focus the freshly
+    // re-created input and move the cursor to the end so typing can continue.
+    searchInput.addEventListener("input", () => {
+      contactSearchQuery = searchInput.value;
+      renderContacts();
+      const freshInput = contactsSection.querySelector(".contacts-search input");
+      if (freshInput) {
+        freshInput.focus();
+        freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length);
+      }
     });
 
     searchForm.appendChild(searchInput);
