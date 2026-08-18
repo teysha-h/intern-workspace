@@ -712,8 +712,16 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTickets();
         const errorMessage = document.createElement("p");
         errorMessage.textContent = "Unable to load ticket data.";
-        ticketsSection.appendChild(errorMessage);
+                ticketsSection.appendChild(errorMessage);
       });
+  }
+
+  // Restore sync status from localStorage on page load
+  const savedUnsynced = localStorage.getItem("intern-workspace-unsynced");
+  if (savedUnsynced === "true") {
+    markUnsynced();
+  } else {
+    markSynced();
   }
 
   // Load todos from localStorage if present (local override)
