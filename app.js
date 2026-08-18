@@ -1366,8 +1366,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== FAQ =====
   // FAQ data lives in data.json and is mirrored here as a fallback so the
-  // "Save JSON" sync always persists it. The FAQ section UI is still a
-  // placeholder; rendering will be added in a later step.
+  // "Save JSON" sync always persists it. The FAQ section renders each
+  // question together with its answer inside the FAQ card.
+  const faqSection = document.getElementById("faq");
   let faqItems = [
     { question: "How do I submit an IT support ticket?", answer: "Go to the Ticket Tracker section and use the form to create a new ticket. Include a clear title and describe the issue so the support team can help you quickly." },
     { question: "Where can I find the onboarding resources?", answer: "Open the Onboarding section from the navigation bar. All documents are listed there and open in a new tab when clicked." },
@@ -1376,6 +1377,41 @@ document.addEventListener("DOMContentLoaded", () => {
     { question: "Where can I find the company rules and regulations?", answer: "They are available in the Onboarding section under Rules and Regulations. Click a document to open it in a new tab." },
   ];
 
+  const renderFaq = () => {
+    if (!faqSection) return;
+
+    const preserve = faqSection.querySelector("h2");
+    faqSection.innerHTML = "";
+    if (preserve) faqSection.appendChild(preserve);
+
+    const container = document.createElement("div");
+    container.className = "faq-list";
+
+    if (!Array.isArray(faqItems) || faqItems.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No FAQ items yet.";
+      container.appendChild(empty);
+    } else {
+      faqItems.forEach((item) => {
+        const entry = document.createElement("div");
+        entry.className = "faq-item";
+
+        const question = document.createElement("h3");
+        question.className = "faq-question";
+        question.textContent = item.question || "";
+
+        const answer = document.createElement("p");
+        answer.className = "faq-answer";
+        answer.textContent = item.answer || "";
+
+        entry.append(question, answer);
+        container.appendChild(entry);
+      });
+    }
+
+    faqSection.appendChild(container);
+  };
+
   (function initFaq() {
     fetch("data.json")
       .then((res) => (res.ok ? res.json() : null))
@@ -1383,8 +1419,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data && Array.isArray(data.faq)) {
           faqItems = data.faq;
         }
+        renderFaq();
       })
-      .catch(() => {});
+      .catch(() => {
+        renderFaq();
+      });
   })();
 
   // ===== Simple hash router: each section card behaves as its own page =====

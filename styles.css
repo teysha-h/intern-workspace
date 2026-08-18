@@ -679,3 +679,30 @@ input[type="submit"],
 .onboarding-doc-item a:hover {
   text-decoration: underline;
 }
+
+/* FAQ: question list */
+.faq-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0;
+}
+
+.faq-item {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.faq-question {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.faq-answer {
+  margin: 0;
+  color: var(--muted);
+}

@@ -110,7 +110,8 @@ What to include:
 
 ## Tue - 18th August 2026
 ### Completed tasks:
-- Planned, implemented, tested and commited the onboarding resources section card (Section 8.5)
+- Edited the formatting of the entire page so each subheading opens up a separate page 
+Planned, implemented, tested and commited the onboarding resources section card (Section 8.5)
 
 
 ### Completed sections at this point:

@@ -75,7 +75,7 @@
       "task": "testing 1",
       "owner": "teysha",
       "dueDate": "2026-08-14T00:00:00.000Z",
-      "completed": false,
+      "completed": true,
       "createdAt": "2026-08-13T01:23:36.051Z"
     }
   ],
@@ -99,6 +99,28 @@
     {
       "name": "Rules and Regulations 2",
       "url": "docs/Rules and regulations 2.pdf"
+    }
+  ],
+  "faq": [
+    {
+      "question": "How do I submit an IT support ticket?",
+      "answer": "Go to the Ticket Tracker section and use the form to create a new ticket. Include a clear title and describe the issue so the support team can help you quickly."
+    },
+    {
+      "question": "Where can I find the onboarding resources?",
+      "answer": "Open the Onboarding section from the navigation bar. All documents are listed there and open in a new tab when clicked."
+    },
+    {
+      "question": "What should I do if my computer is not working?",
+      "answer": "Create a ticket in the Ticket Tracker with the details of the problem. You can also reach the IT help desk through the Support links in the Important Links section."
+    },
+    {
+      "question": "How do I reset my password?",
+      "answer": "Contact the IT Service Desk. You can find the IT Help Desk link under Support in the Important Links section."
+    },
+    {
+      "question": "Where can I find the company rules and regulations?",
+      "answer": "They are available in the Onboarding section under Rules and Regulations. Click a document to open it in a new tab."
     }
   ]
 }
