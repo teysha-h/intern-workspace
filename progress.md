@@ -59,8 +59,8 @@ What to include:
 - Edited the design for the ITSD ticket tracker section card
 
 ### Completed sections at this point:
-(8.1) Dashboard
-(8.2) ITSD ticket tracker
+- (8.1) Dashboard
+- (8.2) ITSD ticket tracker
 
 ### Next steps:
 - Complete Section 8.3: Shared to-do
@@ -78,9 +78,9 @@ What to include:
 - Implemented the appearance of the shared to-do section and its buttons using styles.css
 
 ### Completed sections at this point:
-(8.1) Dashboard
-(8.2) ITSD ticket tracker
-(8.3) Shared to-do
+- (8.1) Dashboard
+- (8.2) ITSD ticket tracker
+- (8.3) Shared to-do
 
 
 ## Fri - 14th August 2026
@@ -89,10 +89,10 @@ What to include:
 - Debugged styles.css as there were some errors, then commited the changes 
 
 ### Completed sections at this point:
-(8.1) Dashboard
-(8.2) ITSD ticket tracker
-(8.3) Shared to-do
-(8.4) Important links 
+- (8.1) Dashboard
+- (8.2) ITSD ticket tracker
+- (8.3) Shared to-do
+- (8.4) Important links 
 
 ## Mon - 17th August 2026
 ### Completed tasks:
@@ -101,22 +101,26 @@ What to include:
 - Debugged the whole page to ensure its running smoothly so far
 
 ### Completed sections at this point:
-(8.1) Dashboard
-(8.2) ITSD ticket tracker
-(8.3) Shared to-do
-(8.4) Important links 
-(8.5) Onboarding resources
+- (8.1) Dashboard
+- (8.2) ITSD ticket tracker
+- (8.3) Shared to-do
+- (8.4) Important links 
+- (8.5) Onboarding resources
 
 
 ## Tue - 18th August 2026
 ### Completed tasks:
 - Edited the formatting of the entire page so each subheading opens up a separate page 
-Planned, implemented, tested and commited the onboarding resources section card (Section 8.5)
+- Planned, implemented, tested and commited the FAQ section card (Section 8.6)
+- Planned, implemented, tested and commited the contacts section card (Section 8.7)
+- Edited the search bars so it is as-you-type filtering instead of when entered
 
 
 ### Completed sections at this point:
-(8.1) Dashboard
-(8.2) ITSD ticket tracker
-(8.3) Shared to-do
-(8.4) Important links 
-(8.5) Onboarding resources
+- (8.1) Dashboard
+- (8.2) ITSD ticket tracker
+- (8.3) Shared to-do
+- (8.4) Important links 
+- (8.5) Onboarding resources
+- (8.6) FAQ
+- (8.7) Contacts 
