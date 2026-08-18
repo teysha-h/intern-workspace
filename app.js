@@ -1581,6 +1581,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const contactsStorageKey = "intern-workspace-contacts";
   let editingContactIndex = null;
+  let contactSearchQuery = "";
 
   const saveContactsToLocalStorage = () => {
     try {
@@ -1612,6 +1613,34 @@ document.addEventListener("DOMContentLoaded", () => {
     contactsSection.innerHTML = "";
     if (preserve) contactsSection.appendChild(preserve);
 
+    // Search bar: mirrors the Ticket Tracker's search pattern. The query is
+    // stored in contactSearchQuery so it persists across re-renders.
+    const searchForm = document.createElement("form");
+    searchForm.className = "contacts-search";
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.placeholder = "Search contacts by name, role, email or phone...";
+    searchInput.value = contactSearchQuery;
+    searchInput.name = "query";
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(searchForm);
+      contactSearchQuery = String(formData.get("query") || "").trim();
+      renderContacts();
+    });
+
+    searchForm.appendChild(searchInput);
+    contactsSection.appendChild(searchForm);
+
+    const query = String(contactSearchQuery || "").trim().toLowerCase();
+    const matchesQuery = (contact) =>
+      !query ||
+      [contact.name, contact.role, contact.email, contact.phone].some((value) =>
+        String(value || "").toLowerCase().includes(query)
+      );
+
     const container = document.createElement("div");
     container.className = "contacts-list";
 
@@ -1620,7 +1649,13 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No contacts yet.";
       container.appendChild(empty);
     } else {
+      let matchCount = 0;
       contactsItems.forEach((contact, contactIndex) => {
+        // Skip filtered-out contacts while keeping the original contactIndex,
+        // so the Edit action keeps targeting the right item in contactsItems
+        // even while the list is filtered.
+        if (!matchesQuery(contact)) return;
+        matchCount += 1;
         const item = document.createElement("div");
         item.className = "contact-item";
 
@@ -1749,6 +1784,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         container.appendChild(item);
       });
+
+      // Show a distinct message when contacts exist but none match the search.
+      if (matchCount === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No contacts match your search query.";
+        container.appendChild(empty);
+      }
     }
 
     contactsSection.appendChild(container);
