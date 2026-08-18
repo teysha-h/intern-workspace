@@ -3,14 +3,14 @@
 ## Thu - 6th August 2026
 ### Completed:
 - Defined project objectives
-- Set up dev tools 
+- Set up dev tools     
 
 
 ## Fri - 7th August 2026
 ### Completed:
 - Set up GitHub repository
 - Practiced with Git and GitHub Copilot
-- Created file structure for project 
+- Created file structure for project       
 
 
 ## Mon - 10th August 2026
@@ -33,22 +33,7 @@ What to include:
 
 - `body`
   - top header with app name
-  - simple navigation bar with anchors for:
-    - Dashboard
-    - Tickets
-    - To Do
-    - Links
-    - Onboarding
-    - FAQ
-    - Contacts
-  - main content area with distinct sections:
-    - dashboard summary cards
-    - ticket tracker preview
-    - shared to-do
-    - links preview
-    - onboarding resources preview
-    - FAQ preview
-    - contact list preview
+  - simple navigation bar with anchors for: dashboard, tickets, to-do, links, onboarding, faq, contacts      
 
 
 ## Tue - 11th August 2026
@@ -64,12 +49,12 @@ What to include:
 
 ### Next steps:
 - Complete Section 8.3: Shared to-do
-- Create branch for section and test entirely before merging with main
+- Create branch for section and test entirely before merging with main      
 
 
 ## Wed - 12th August 2026
 ### Completed tasks:
-- Bug tested ITSD ticket tracker and rest of webpage 
+- Bug tested ITSD ticket tracker and rest of webpage      
 
 
 ## Thu - 13th August 2026
@@ -80,7 +65,7 @@ What to include:
 ### Completed sections at this point:
 - (8.1) Dashboard
 - (8.2) ITSD ticket tracker
-- (8.3) Shared to-do
+- (8.3) Shared to-do    
 
 
 ## Fri - 14th August 2026
@@ -92,7 +77,8 @@ What to include:
 - (8.1) Dashboard
 - (8.2) ITSD ticket tracker
 - (8.3) Shared to-do
-- (8.4) Important links 
+- (8.4) Important links      
+
 
 ## Mon - 17th August 2026
 ### Completed tasks:
@@ -105,7 +91,7 @@ What to include:
 - (8.2) ITSD ticket tracker
 - (8.3) Shared to-do
 - (8.4) Important links 
-- (8.5) Onboarding resources
+- (8.5) Onboarding resources     
 
 
 ## Tue - 18th August 2026
@@ -123,4 +109,4 @@ What to include:
 - (8.4) Important links 
 - (8.5) Onboarding resources
 - (8.6) FAQ
-- (8.7) Contacts 
+- (8.7) Contacts      
