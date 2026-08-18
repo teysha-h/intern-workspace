@@ -1580,6 +1580,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const contactsStorageKey = "intern-workspace-contacts";
+  let editingContactIndex = null;
 
   const saveContactsToLocalStorage = () => {
     try {
@@ -1619,37 +1620,133 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No contacts yet.";
       container.appendChild(empty);
     } else {
-      contactsItems.forEach((contact) => {
+      contactsItems.forEach((contact, contactIndex) => {
         const item = document.createElement("div");
         item.className = "contact-item";
 
-        const name = document.createElement("h3");
-        name.textContent = contact.name || "";
-        item.appendChild(name);
+        // Edit mode: swap the read-only details for an inline form, mirroring
+        // the inline editing pattern used by the FAQ and Important Links cards.
+        if (editingContactIndex === contactIndex) {
+          item.classList.add("contact-item--editing");
 
-        const role = document.createElement("p");
-        role.className = "contact-role";
-        role.textContent = contact.role || "";
-        item.appendChild(role);
+          const form = document.createElement("form");
+          form.className = "contact-edit-form";
 
-        const details = document.createElement("div");
-        details.className = "contact-details";
+          const nameLabel = document.createElement("label");
+          nameLabel.textContent = "Name";
+          const nameInput = document.createElement("input");
+          nameInput.name = "name";
+          nameInput.required = true;
+          nameInput.value = contact.name || "";
+          nameLabel.appendChild(nameInput);
 
-        if (contact.email) {
-          const emailLink = document.createElement("a");
-          emailLink.href = `mailto:${contact.email}`;
-          emailLink.textContent = contact.email;
-          details.appendChild(emailLink);
+          const roleLabel = document.createElement("label");
+          roleLabel.textContent = "Role";
+          const roleInput = document.createElement("input");
+          roleInput.name = "role";
+          roleInput.value = contact.role || "";
+          roleLabel.appendChild(roleInput);
+
+          const emailLabel = document.createElement("label");
+          emailLabel.textContent = "Email";
+          const emailInput = document.createElement("input");
+          emailInput.name = "email";
+          emailInput.type = "email";
+          emailInput.value = contact.email || "";
+          emailLabel.appendChild(emailInput);
+
+          const phoneLabel = document.createElement("label");
+          phoneLabel.textContent = "Phone";
+          const phoneInput = document.createElement("input");
+          phoneInput.name = "phone";
+          phoneInput.type = "tel";
+          phoneInput.value = contact.phone || "";
+          phoneLabel.appendChild(phoneInput);
+
+          const actions = document.createElement("div");
+          actions.className = "contact-edit-actions";
+
+          const saveButton = document.createElement("button");
+          saveButton.type = "submit";
+          saveButton.className = "new-ticket-btn";
+          saveButton.textContent = "Save";
+          saveButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (!form.reportValidity()) return;
+            const name = String(nameInput.value || "").trim();
+            if (!name) return;
+            const role = String(roleInput.value || "").trim();
+            const email = String(emailInput.value || "").trim();
+            const phone = String(phoneInput.value || "").trim();
+            contactsItems[contactIndex] = { name, role, email, phone };
+            editingContactIndex = null;
+            saveContactsToLocalStorage();
+            markUnsynced();
+            renderContacts();
+          });
+
+          const cancelButton = document.createElement("button");
+          cancelButton.type = "button";
+          cancelButton.className = "new-ticket-btn";
+          cancelButton.textContent = "Cancel";
+          cancelButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            editingContactIndex = null;
+            renderContacts();
+          });
+
+          actions.append(saveButton, cancelButton);
+          form.append(nameLabel, roleLabel, emailLabel, phoneLabel, actions);
+          item.appendChild(form);
+        } else {
+          const header = document.createElement("div");
+          header.className = "contact-header";
+
+          const name = document.createElement("h3");
+          name.textContent = contact.name || "";
+
+          const actions = document.createElement("div");
+          actions.className = "contact-item-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "new-ticket-btn";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            editingContactIndex = contactIndex;
+            renderContacts();
+          });
+
+          actions.appendChild(editButton);
+          header.append(name, actions);
+          item.appendChild(header);
+
+          const role = document.createElement("p");
+          role.className = "contact-role";
+          role.textContent = contact.role || "";
+          item.appendChild(role);
+
+          const details = document.createElement("div");
+          details.className = "contact-details";
+
+          if (contact.email) {
+            const emailLink = document.createElement("a");
+            emailLink.href = `mailto:${contact.email}`;
+            emailLink.textContent = contact.email;
+            details.appendChild(emailLink);
+          }
+
+          if (contact.phone) {
+            const phoneLink = document.createElement("a");
+            phoneLink.href = `tel:${contact.phone}`;
+            phoneLink.textContent = contact.phone;
+            details.appendChild(phoneLink);
+          }
+
+          item.appendChild(details);
         }
 
-        if (contact.phone) {
-          const phoneLink = document.createElement("a");
-          phoneLink.href = `tel:${contact.phone}`;
-          phoneLink.textContent = contact.phone;
-          details.appendChild(phoneLink);
-        }
-
-        item.appendChild(details);
         container.appendChild(item);
       });
     }

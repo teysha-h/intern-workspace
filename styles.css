@@ -889,3 +889,91 @@ input[type="submit"],
   text-decoration: underline;
 }
 
+/* Contacts: header row with the name and the Edit button beside it, matching
+   the way FAQ questions and Important Links are laid out */
+.contact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.contact-header h3 {
+  margin: 0;
+}
+
+/* Contacts: Edit button styling (matches the FAQ/link Edit buttons) */
+.contact-item-actions .new-ticket-btn {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  color: #333;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.contact-item-actions .new-ticket-btn:hover {
+  opacity: 0.95;
+}
+
+/* Contacts: inline edit form (matches the FAQ/link edit form styling) */
+.contact-item--editing {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.contact-edit-form {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.contact-edit-form label {
+  display: grid;
+  gap: 0.25rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.contact-edit-form input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.contact-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.contact-edit-actions .new-ticket-btn {
+  background: #4863A0;
+  color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.contact-edit-actions .new-ticket-btn:hover {
+  background: #3b4f87;
+}

@@ -75,7 +75,7 @@
       "task": "testing 1",
       "owner": "teysha",
       "dueDate": "2026-08-14T00:00:00.000Z",
-      "completed": true,
+      "completed": false,
       "createdAt": "2026-08-13T01:23:36.051Z"
     }
   ],
@@ -140,7 +140,7 @@
       "name": "Sarah Chen",
       "role": "Intern",
       "email": "sarah.chen@example.com",
-      "phone": "555-0102"
+      "phone": "555-0103"
     }
   ]
 }
