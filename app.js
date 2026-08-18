@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const writable = await writableFileHandle.createWritable();
-      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments, faq: faqItems };
+      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments, faq: faqItems, contacts: contactsItems };
       await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
       saveToLocalStorage(allTickets);
@@ -1567,6 +1567,120 @@ document.addEventListener("DOMContentLoaded", () => {
         renderFaq();
       });
   })();
+
+  // ===== Contacts =====
+  // Contact data lives in data.json and is mirrored here as a fallback so the
+  // "Save JSON" sync always persists it. The Contacts section renders each
+  // person with their role, email and phone inside the Contacts card.
+  const contactsSection = document.getElementById("contacts");
+  let contactsItems = [
+    { name: "Peter Smith", role: "IT Service Desk", email: "peter.smith@example.com", phone: "555-0100" },
+    { name: "Lily Jones", role: "HR", email: "lily.jones@example.com", phone: "555-0101" },
+    { name: "Sarah Chen", role: "Intern", email: "sarah.chen@example.com", phone: "555-0102" },
+  ];
+
+  const contactsStorageKey = "intern-workspace-contacts";
+
+  const saveContactsToLocalStorage = () => {
+    try {
+      localStorage.setItem(contactsStorageKey, JSON.stringify(contactsItems));
+    } catch (error) {
+      console.warn("Unable to save contacts locally", error);
+    }
+  };
+
+  const loadContactsFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(contactsStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to load contacts from local storage", error);
+    }
+    return null;
+  };
+
+  const renderContacts = () => {
+    if (!contactsSection) return;
+
+    const preserve = contactsSection.querySelector("h2");
+    contactsSection.innerHTML = "";
+    if (preserve) contactsSection.appendChild(preserve);
+
+    const container = document.createElement("div");
+    container.className = "contacts-list";
+
+    if (!Array.isArray(contactsItems) || contactsItems.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No contacts yet.";
+      container.appendChild(empty);
+    } else {
+      contactsItems.forEach((contact) => {
+        const item = document.createElement("div");
+        item.className = "contact-item";
+
+        const name = document.createElement("h3");
+        name.textContent = contact.name || "";
+        item.appendChild(name);
+
+        const role = document.createElement("p");
+        role.className = "contact-role";
+        role.textContent = contact.role || "";
+        item.appendChild(role);
+
+        const details = document.createElement("div");
+        details.className = "contact-details";
+
+        if (contact.email) {
+          const emailLink = document.createElement("a");
+          emailLink.href = `mailto:${contact.email}`;
+          emailLink.textContent = contact.email;
+          details.appendChild(emailLink);
+        }
+
+        if (contact.phone) {
+          const phoneLink = document.createElement("a");
+          phoneLink.href = `tel:${contact.phone}`;
+          phoneLink.textContent = contact.phone;
+          details.appendChild(phoneLink);
+        }
+
+        item.appendChild(details);
+        container.appendChild(item);
+      });
+    }
+
+    contactsSection.appendChild(container);
+  };
+
+  // Initialize Contacts: prefer localStorage (edits/refresh persist), then
+  // data.json, else the built-in defaults above.
+  (function initContacts() {
+    if (!contactsSection) return;
+    const local = loadContactsFromLocalStorage();
+    if (local !== null) {
+      contactsItems = local;
+      renderContacts();
+      return;
+    }
+    fetch("data.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.contacts)) {
+          contactsItems = data.contacts;
+          saveContactsToLocalStorage();
+        }
+        renderContacts();
+      })
+      .catch(() => {
+        renderContacts();
+      });
+  })();
+
 
   // ===== Simple hash router: each section card behaves as its own page =====
   // No hash => show the Home section. A hash such as #tickets shows only that
