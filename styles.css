@@ -1,18 +1,33 @@
 :root {
-  --bg: #f4f6f8;
-  --surface: #ffffff;
-  --text: #1f2937;
-  --muted: #5b6472;
-  --accent: #2563eb;
-  --border: #dce3ea;
+  --bg: #F5F7FA;                    /* light cool-grey page background */
+  --surface: #ffffff;               /* white cards / header */
+  --text: #000000;                  /* black text */
+  --muted: #5F6B7A;                 /* muted / secondary text */
+  --accent: #1F4E79;                /* professional corporate-blue accent */
+  --accent-light: #D6E4F0;          /* light blue for subtle highlights */
+  --accent-hover: #2A5D8F;          /* slightly lighter blue for hover states */
+  --on-accent: #ffffff;             /* white text on dark accents */
+  --tint: rgba(31, 78, 121, 0.04);  /* subtle blue tint for panel backgrounds */
+  --border: #E2E8F0;                /* cool light-grey border */
 }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Helvetica", Geneva, sans-serif;
+  font-weight: 400;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+}
+
+/* Typography: explicit heading weights so headings stand out above body text */
+h1,
+main h2 {
+  font-weight: 700;
+}
+
+h3 {
+  font-weight: 600;
 }
 
 main {
@@ -197,7 +212,7 @@ section {
   box-sizing: border-box;
 }
 
-/* Sorter (sort form) should use Verdana like other controls */
+/* Sorter (sort form) should use Helvetica like other controls */
 .tickets-sort {
   display: flex;
   flex-wrap: wrap;
@@ -207,17 +222,17 @@ section {
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
-  font-family: Verdana, Geneva, sans-serif;
+  background: var(--tint);
+  font-family: Helvetica, Geneva, sans-serif;
 }
 
 .tickets-sort label {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.9rem;
-  font-family: Verdana, Geneva, sans-serif;
+  font-family: Helvetica, Geneva, sans-serif;
 }
 
 .tickets-sort select {
@@ -227,7 +242,7 @@ section {
   font-size: 0.9rem;
   background: var(--surface);
   color: var(--text);
-  font-family: Verdana, Geneva, sans-serif;
+  font-family: Helvetica, Geneva, sans-serif;
 }
 
 
@@ -239,7 +254,7 @@ section {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .ticket-form h3 {
@@ -250,7 +265,7 @@ section {
 .ticket-form label {
   display: grid;
   gap: 0.35rem;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .ticket-form .ticket-form-field {
@@ -311,15 +326,15 @@ section {
 .ticket-form-actions .new-ticket-btn,
 .tickets-header .new-ticket-btn,
 .todo-form-actions .new-ticket-btn {
-  background: #4863A0;
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: 1px solid rgba(0,0,0,0.08);
 }
 
 .ticket-form-actions .new-ticket-btn:hover,
 .tickets-header .new-ticket-btn:hover,
 .todo-form-actions .new-ticket-btn:hover {
-  background: #3b4f87;
+  background: var(--accent-hover);
 }
 
 .ticket-table input,
@@ -343,8 +358,8 @@ section {
   margin-right: 0.5rem;
   margin-bottom: 0.25rem;
   padding: 0.35rem 0.85rem;
-  background: #4863A0;
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
   border-radius: 12px;
   display: inline-flex;
@@ -354,12 +369,12 @@ section {
 }
 
 .ticket-action-btn:hover {
-  background: #3b4f87;
+  background: var(--accent-hover);
 }
 
 .ticket-action-btn.cancel {
   background: #f3f4f6;
-  color: #1f2937;
+  color: var(--text);
   border: 1px solid #c7ced6;
 }
 
@@ -401,14 +416,14 @@ section {
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .todo-filters label {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.9rem;
 }
 
@@ -454,13 +469,13 @@ ul.todo-list {
 .todo-item > .todo-label {
   grid-column: 2;
   grid-row: 1;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .todo-item > .todo-meta {
   grid-column: 2;
   grid-row: 2;
-  color: #666;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
@@ -472,8 +487,8 @@ ul.todo-list {
   border-radius: 6px;
   cursor: pointer;
   background: transparent;
-  border: 1px solid #e0e0e0;
-  color: #333;
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 
 /* Green styling for the mark-as-done button */
@@ -508,13 +523,13 @@ ul.todo-list {
 /* When a todo is completed, slightly dim the label */
 .todo-item.completed .todo-label {
   text-decoration: line-through;
-  color: #7a7a7a;
+  color: var(--muted);
 }
 
 /* Make Add comment and Edit (action-column non-cancel buttons) match the Delete (cancel) button color */
 .ticket-table td:last-child .ticket-action-btn:not(.cancel) {
   background: #f3f4f6;
-  color: #1f2937;
+  color: var(--text);
   border: 1px solid #c7ced6;
 }
 .ticket-table td:last-child .ticket-action-btn:not(.cancel):hover {
@@ -526,14 +541,14 @@ p {
   margin-bottom: 0;
 }
 
-/* Button typography adjustments: use Verdana, smaller size, and bold */
+/* Button typography adjustments: use Helvetica, smaller size, and bold */
 button,
 input[type="button"],
 input[type="submit"],
 .new-ticket-btn,
 .ticket-action-btn,
 .sync-badge {
-  font-family: Verdana, Geneva, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, Geneva, sans-serif;
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -550,7 +565,7 @@ input[type="submit"],
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem 1.2rem;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .link-category h3 {
@@ -570,7 +585,7 @@ input[type="submit"],
 .link-list a {
   color: var(--accent);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .link-list a:hover {
@@ -591,8 +606,8 @@ input[type="submit"],
   border-radius: 6px;
   cursor: pointer;
   background: transparent;
-  border: 1px solid #e0e0e0;
-  color: #333;
+  border: 1px solid var(--border);
+  color: var(--text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -610,13 +625,13 @@ input[type="submit"],
   padding: 0.5rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .link-edit-form label {
   display: grid;
   gap: 0.25rem;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.85rem;
 }
 
@@ -635,8 +650,8 @@ input[type="submit"],
 }
 
 .link-edit-actions .new-ticket-btn {
-  background: #4863A0;
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   font: inherit;
@@ -651,7 +666,7 @@ input[type="submit"],
 }
 
 .link-edit-actions .new-ticket-btn:hover {
-  background: #3b4f87;
+  background: var(--accent-hover);
 }
 
 /* Onboarding Resources: document list with gaps between items, no bullets */
@@ -667,13 +682,13 @@ input[type="submit"],
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .onboarding-doc-item a {
   color: var(--accent);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .onboarding-doc-item a:hover {
@@ -692,7 +707,7 @@ input[type="submit"],
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .faq-question {
@@ -772,8 +787,8 @@ input[type="submit"],
   border-radius: 6px;
   cursor: pointer;
   background: transparent;
-  border: 1px solid #e0e0e0;
-  color: #333;
+  border: 1px solid var(--border);
+  color: var(--text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -797,13 +812,13 @@ input[type="submit"],
   padding: 0.5rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .faq-edit-form label {
   display: grid;
   gap: 0.25rem;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.85rem;
 }
 
@@ -828,8 +843,8 @@ input[type="submit"],
 }
 
 .faq-edit-actions .new-ticket-btn {
-  background: #4863A0;
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   font: inherit;
@@ -844,7 +859,7 @@ input[type="submit"],
 }
 
 .faq-edit-actions .new-ticket-btn:hover {
-  background: #3b4f87;
+  background: var(--accent-hover);
 }
 
 /* Contacts: contact list card styling (matches the other section cards) */
@@ -874,7 +889,7 @@ input[type="submit"],
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .contact-item h3 {
@@ -896,7 +911,7 @@ input[type="submit"],
 .contact-details a {
   color: var(--accent);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .contact-details a:hover {
@@ -923,8 +938,8 @@ input[type="submit"],
   border-radius: 6px;
   cursor: pointer;
   background: transparent;
-  border: 1px solid #e0e0e0;
-  color: #333;
+  border: 1px solid var(--border);
+  color: var(--text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -948,13 +963,13 @@ input[type="submit"],
   padding: 0.5rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.03);
+  background: var(--tint);
 }
 
 .contact-edit-form label {
   display: grid;
   gap: 0.25rem;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.85rem;
 }
 
@@ -973,8 +988,8 @@ input[type="submit"],
 }
 
 .contact-edit-actions .new-ticket-btn {
-  background: #4863A0;
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   font: inherit;
@@ -989,5 +1004,5 @@ input[type="submit"],
 }
 
 .contact-edit-actions .new-ticket-btn:hover {
-  background: #3b4f87;
+  background: var(--accent-hover);
 }
