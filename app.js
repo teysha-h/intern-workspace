@@ -17,51 +17,26 @@ document.addEventListener("DOMContentLoaded", () => {
   let todoOwnerFilter = "";
   let todoStatusFilter = "";
 
-  const normalizeComments = (comments, fallbackTimestamp) => {
-    if (!comments) return [];
-    if (Array.isArray(comments)) {
-      return comments
-        .map((comment) => {
-          if (typeof comment === "string") {
-            return { text: comment, timestamp: fallbackTimestamp || new Date().toISOString() };
-          }
-          if (comment && typeof comment === "object" && typeof comment.text === "string") {
-            return {
-              text: String(comment.text),
-              timestamp: comment.timestamp || fallbackTimestamp || new Date().toISOString(),
-            };
-          }
-          return null;
-        })
-        .filter((comment) => comment && comment.text.length > 0);
-    }
-    return [];
-  };
-
-  const normalizeTicket = (ticket) => ({
-    ...ticket,
-    comments: normalizeComments(ticket.comments, ticket.timestamp),
-  });
-
-  const commentsToTextarea = (comments) => {
-    if (!Array.isArray(comments)) return "";
-    return comments.map((comment) => comment.text).join("\n");
-  };
-
-  const parseComments = (value, existingComments = []) => {
-    const lines = String(value || "")
-      .split(/\r?\n/)
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-
-    return lines.map((text) => {
-      const existing = existingComments.find((comment) => comment.text === text);
-      return {
-        text,
-        timestamp: existing?.timestamp || new Date().toISOString(),
-      };
-    });
-  };
+  const helpers = window.helpers || {};
+  const {
+    normalizeComments,
+    normalizeTicket,
+    commentsToTextarea,
+    parseComments,
+    formatTimestamp,
+    getNextTicketId,
+    parseTicketId,
+    sortTickets,
+    filterTickets,
+    formatDueDate,
+    toDateInputValue,
+    nextTodoId,
+    filterTodos,
+    groupDocumentsByFirstWord,
+    contactMatchesQuery,
+    deepEqual,
+    refreshSnapshotMatches,
+  } = helpers;
 
   const setSyncStatus = (state, message = "") => {
     if (!syncStatusEl) return;
@@ -228,59 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return Number.isNaN(date.getTime()) ? timestamp : date.toLocaleString();
-  };
-
-  const getNextTicketId = (tickets) => {
-    const numericIds = tickets
-      .map((ticket) => Number.parseInt((ticket.id || "").toString().replace(/\D/g, ""), 10))
-      .filter((value) => Number.isFinite(value));
-
-    const maxId = numericIds.length ? Math.max(...numericIds) : 0;
-    return `T-${String(maxId + 1).padStart(4, "0")}`;
-  };
-
-  const sortStatusOrder = {
-    Open: 0,
-    "In Progress": 1,
-    Resolved: 2,
-  };
-
-  const parseTicketId = (ticketId) => {
-    const numeric = Number.parseInt(String(ticketId || "").replace(/\D/g, ""), 10);
-    return Number.isFinite(numeric) ? numeric : 0;
-  };
-
-  const sortTickets = (tickets) => {
-    const copied = [...tickets];
-
-    if (sortMode === "owner") {
-      return copied.sort((a, b) => {
-        const ownerA = String(a.owner || "").toLowerCase();
-        const ownerB = String(b.owner || "").toLowerCase();
-        const ownerCompare = ownerA.localeCompare(ownerB);
-        if (ownerCompare !== 0) {
-          return ownerCompare;
-        }
-        return parseTicketId(a.id) - parseTicketId(b.id);
-      });
-    }
-
-    if (sortMode === "status") {
-      return copied.sort((a, b) => {
-        const statusA = sortStatusOrder[String(a.status || "")] ?? Number.MAX_SAFE_INTEGER;
-        const statusB = sortStatusOrder[String(b.status || "")] ?? Number.MAX_SAFE_INTEGER;
-        if (statusA !== statusB) {
-          return statusA - statusB;
-        }
-        return parseTicketId(a.id) - parseTicketId(b.id);
-      });
-    }
-
-    return copied.sort((a, b) => parseTicketId(a.id) - parseTicketId(b.id));
-  };
+  
 
   const renderTickets = (tickets) => {
     clearTickets();
@@ -447,12 +370,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ticketsSection.appendChild(form);
     }
 
-    const query = String(searchQuery || "").trim().toLowerCase();
-    const filteredTickets = query
-      ? tickets.filter((ticket) => String(ticket.title || "").toLowerCase().includes(query))
-      : tickets;
+    const filteredTickets = filterTickets(tickets, searchQuery);
 
-    const visibleTickets = sortTickets(filteredTickets);
+    const visibleTickets = sortTickets(filteredTickets, sortMode);
 
     if (visibleTickets.length === 0) {
       const noResults = document.createElement("p");
@@ -745,31 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const formatDueDate = (iso) => {
-    const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
-  };
-
-  const toDateInputValue = (iso) => {
-    if (!iso) return "";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "";
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const nextTodoId = (todos) => {
-    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-      return crypto.randomUUID();
-    }
-    const numericIds = (todos || [])
-      .map((t) => Number.parseInt(String(t.id || "").replace(/\D/g, ""), 10))
-      .filter(Number.isFinite);
-    const maxId = numericIds.length ? Math.max(...numericIds) : 0;
-    return String(maxId + 1);
-  };
+  
 
   const todoSection = document.getElementById("todo");
 
@@ -836,12 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(filterBar);
 
       // Apply filters
-      const filteredTodos = (todos || []).filter((t) => {
-        if (todoOwnerFilter && (t.owner || "") !== todoOwnerFilter) return false;
-        if (todoStatusFilter === "open" && t.completed) return false;
-        if (todoStatusFilter === "completed" && !t.completed) return false;
-        return true;
-      });
+      const filteredTodos = filterTodos(todos, todoOwnerFilter, todoStatusFilter);
 
       if (filteredTodos.length === 0) {
         const empty = document.createElement("p");
@@ -1335,15 +1226,7 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No onboarding resources yet.";
       container.appendChild(empty);
     } else {
-      const groups = new Map();
-      onboardingDocuments.forEach((doc) => {
-        const name = String(doc.name || doc.url || "");
-        const category = name.trim().split(/\s+/)[0] || "Other";
-        if (!groups.has(category)) {
-          groups.set(category, []);
-        }
-        groups.get(category).push(doc);
-      });
+      const groups = groupDocumentsByFirstWord(onboardingDocuments);
 
       groups.forEach((docs, category) => {
         const heading = document.createElement("h3");
@@ -1676,11 +1559,7 @@ document.addEventListener("DOMContentLoaded", () => {
     contactsSection.appendChild(searchForm);
 
     const query = String(contactSearchQuery || "").trim().toLowerCase();
-    const matchesQuery = (contact) =>
-      !query ||
-      [contact.name, contact.role, contact.email, contact.phone].some((value) =>
-        String(value || "").toLowerCase().includes(query)
-      );
+    const matchesQuery = (contact) => contactMatchesQuery(contact, query);
 
     const container = document.createElement("div");
     container.className = "contacts-list";
@@ -1869,27 +1748,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // yet been written to data.json. Deriving the status from the data (instead
   // of a stored boolean flag) fixes the bug where the panel kept reporting
   // "Unsynced changes" even after a successful Save JSON.
-  const deepEqual = (a, b) => {
-    if (a === b) return true;
-    if (typeof a !== typeof b) return false;
-    if (typeof a !== "object" || a === null || b === null) return a === b;
-    if (Array.isArray(a) !== Array.isArray(b)) return false;
-    if (Array.isArray(a)) {
-      if (a.length !== b.length) return false;
-      return a.every((item, index) => deepEqual(item, b[index]));
-    }
-    const aKeys = Object.keys(a).sort();
-    const bKeys = Object.keys(b).sort();
-    if (aKeys.length !== bKeys.length) return false;
-    return aKeys.every((key, index) => key === bKeys[index] && deepEqual(a[key], b[key]));
-  };
-
-  const refreshSnapshotMatches = (onDisk) =>
-    deepEqual(allTickets || [], onDisk.tickets || []) &&
-    deepEqual(window._sharedTodos || [], onDisk.todos || []) &&
-    deepEqual(onboardingDocuments || [], onDisk.onboarding || []) &&
-    deepEqual(faqItems || [], onDisk.faq || []) &&
-    deepEqual(contactsItems || [], onDisk.contacts || []);
+  
 
   const refreshSyncState = async () => {
     try {
@@ -1899,7 +1758,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const onDisk = Array.isArray(fileData)
         ? { tickets: fileData, todos: [] }
         : fileData || {};
-      if (refreshSnapshotMatches(onDisk)) {
+      if (
+        refreshSnapshotMatches(
+          {
+            tickets: allTickets || [],
+            todos: window._sharedTodos || [],
+            onboarding: onboardingDocuments || [],
+            faq: faqItems || [],
+            contacts: contactsItems || [],
+          },
+          onDisk
+        )
+      ) {
         markSynced();
       } else {
         markUnsynced();
