@@ -716,13 +716,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // Restore sync status from localStorage on page load
-  const savedUnsynced = localStorage.getItem("intern-workspace-unsynced");
-  if (savedUnsynced === "true") {
-    markUnsynced();
-  } else {
-    markSynced();
-  }
+  // The "Unsynced changes"/"All changes synced" panel is now decided by
+  // `refreshSyncState()` (defined at the end of this file), which compares the
+  // current live data against data.json. We no longer restore a stale
+  // localStorage flag here, which previously kept showing "Unsynced changes"
+  // even after the JSON file had already been updated by Save JSON.
 
   // Load todos from localStorage if present (local override)
   const todoStorageKey = "intern-workspace-shared-todos";
@@ -1863,6 +1861,56 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   })();
 
+
+  // ===== Sync status panel =====
+  // The badge next to "Save JSON" should reflect the real state: it shows
+  // "All changes synced" only when the live data matches what is currently in
+  // data.json, and "Unsynced changes" when the app holds edits that have not
+  // yet been written to data.json. Deriving the status from the data (instead
+  // of a stored boolean flag) fixes the bug where the panel kept reporting
+  // "Unsynced changes" even after a successful Save JSON.
+  const deepEqual = (a, b) => {
+    if (a === b) return true;
+    if (typeof a !== typeof b) return false;
+    if (typeof a !== "object" || a === null || b === null) return a === b;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    if (Array.isArray(a)) {
+      if (a.length !== b.length) return false;
+      return a.every((item, index) => deepEqual(item, b[index]));
+    }
+    const aKeys = Object.keys(a).sort();
+    const bKeys = Object.keys(b).sort();
+    if (aKeys.length !== bKeys.length) return false;
+    return aKeys.every((key, index) => key === bKeys[index] && deepEqual(a[key], b[key]));
+  };
+
+  const refreshSnapshotMatches = (onDisk) =>
+    deepEqual(allTickets || [], onDisk.tickets || []) &&
+    deepEqual(window._sharedTodos || [], onDisk.todos || []) &&
+    deepEqual(onboardingDocuments || [], onDisk.onboarding || []) &&
+    deepEqual(faqItems || [], onDisk.faq || []) &&
+    deepEqual(contactsItems || [], onDisk.contacts || []);
+
+  const refreshSyncState = async () => {
+    try {
+      const response = await fetch("data.json");
+      if (!response.ok) return;
+      const fileData = await response.json();
+      const onDisk = Array.isArray(fileData)
+        ? { tickets: fileData, todos: [] }
+        : fileData || {};
+      if (refreshSnapshotMatches(onDisk)) {
+        markSynced();
+      } else {
+        markUnsynced();
+      }
+    } catch (error) {
+      // If data.json cannot be read, leave the panel in its current state.
+    }
+  };
+
+  // Decide the panel state now that every section has been loaded.
+  refreshSyncState();
 
   // ===== Simple hash router: each section card behaves as its own page =====
   // No hash => show the Home section. A hash such as #tickets shows only that
