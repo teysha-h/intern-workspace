@@ -116,3 +116,14 @@ What to include:
 ### Completed tasks:
 - Debugged the 'unsynced changes' panel next to the save JSON button
 - Tested the functionality and buttons of entire workspace page
+
+### Unit testing:
+__The app's features (and therefore what needs testing):__
+1. __Ticket Tracker__ — render/search/sort tickets, create/edit/delete tickets, add comments, local-storage persistence, JSON file sync
+2. __Shared To-Do__ — list tasks, filter by owner/status, add, toggle done, edit, delete, local storage
+3. __Important Links__ — render/edit category links, HTML file sync
+4. __Onboarding__ — group docs by first word and render them
+5. __FAQ__ — collapsible Q\&A (toggle open/closed), edit items, local storage
+6. __Contacts__ — render/search/edit contacts, local storage
+7. __Routing__ — show one section per navigation hash
+8. __Sync status__ — compare live data to `data.json` and show "All changes synced" vs "Unsynced changes"
