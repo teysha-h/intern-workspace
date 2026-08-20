@@ -116,3 +116,15 @@ What to include:
 ### Completed tasks:
 - Debugged the 'unsynced changes' panel next to the save JSON button
 - Tested the functionality and buttons of entire workspace page
+- Unit testing files created in branch 'unit-testing'
+- Unit testing executed -> No errors detected and everything working well
+
+### Next steps (after review):
+1. Add a dashboard with summary charts on home page 
+2. Add another page for team members 
+3. Create a login page where the user can select who they are 
+4. Create admin control (admin can add and remove people from the team)
+5. Owner for the ticket is selected from a drop down of team members
+6. Include a delete button for FAQs
+7. Make comments in the ticket-tracker editable
+8. Use icons instead of buttons for actions
