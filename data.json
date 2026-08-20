@@ -77,14 +77,6 @@
       "dueDate": "2026-08-21T00:00:00.000Z",
       "completed": false,
       "createdAt": "2026-08-18T06:36:21.896Z"
-    },
-    {
-      "id": "4e8aea25-87e0-4431-8373-31bf3531b882",
-      "task": "task 3",
-      "owner": "teysha",
-      "dueDate": "2026-08-22T00:00:00.000Z",
-      "completed": false,
-      "createdAt": "2026-08-20T01:18:55.858Z"
     }
   ],
   "onboarding": [
