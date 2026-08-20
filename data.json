@@ -17,6 +17,10 @@
         {
           "text": "testing testing 123",
           "timestamp": "2026-08-13T01:22:16.629Z"
+        },
+        {
+          "text": "hi",
+          "timestamp": "2026-08-20T08:34:47.571Z"
         }
       ],
       "timestamp": "2026-08-11T09:01:57.216Z"
@@ -69,14 +73,6 @@
       "dueDate": "2026-08-14T00:00:00.000Z",
       "completed": false,
       "createdAt": "2026-08-13T01:23:36.051Z"
-    },
-    {
-      "id": "450ce22c-6e61-4b78-ae0a-ca4fbd6d7f3a",
-      "task": "task task",
-      "owner": "woody",
-      "dueDate": "2026-08-21T00:00:00.000Z",
-      "completed": false,
-      "createdAt": "2026-08-18T06:36:21.896Z"
     }
   ],
   "onboarding": [
@@ -117,10 +113,6 @@
     {
       "question": "How do I reset my password?",
       "answer": "Contact the IT Service Desk. You can find the IT Help Desk link under Support in the Important Links section."
-    },
-    {
-      "question": "Where can I find the company rules and regulations?",
-      "answer": "They are available in the Onboarding section under Rules and Regulations. Click a document to open it in a new tab."
     }
   ],
   "contacts": [

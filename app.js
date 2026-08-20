@@ -17,6 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let todoOwnerFilter = "";
   let todoStatusFilter = "";
 
+  // Shared pencil icon used by every "Edit" button. The icon inherits the
+  // button's text color via stroke="currentColor".
+  const editIconSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
+
+  // Trash icon used by every "Delete" button (matches the Feather icon set of
+  // the pencil Edit icon above). It inherits the button's text color via
+  // stroke="currentColor".
+  const deleteIconSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
   const normalizeComments = (comments, fallbackTimestamp) => {
     if (!comments) return [];
     if (Array.isArray(comments)) {
@@ -640,14 +650,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const editButton = document.createElement("button");
         editButton.type = "button";
-        editButton.className = "new-ticket-btn ticket-action-btn";
-        editButton.textContent = "Edit";
+        editButton.className = "new-ticket-btn ticket-action-btn edit-btn";
+        editButton.innerHTML = editIconSvg;
+        editButton.setAttribute("aria-label", "Edit");
+        editButton.setAttribute("data-tooltip", "Edit");
         editButton.addEventListener("click", () => startEditingTicket(ticket.id));
 
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
-        deleteButton.className = "new-ticket-btn ticket-action-btn cancel";
-        deleteButton.textContent = "Delete";
+        deleteButton.className = "new-ticket-btn ticket-action-btn delete-btn";
+        deleteButton.innerHTML = deleteIconSvg;
+        deleteButton.setAttribute("aria-label", "Delete");
+        deleteButton.setAttribute("data-tooltip", "Delete");
         deleteButton.addEventListener("click", async () => {
           if (!confirm("Delete this ticket?")) return;
           await deleteTicket(ticket.id);
@@ -928,7 +942,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const editButton = document.createElement("button");
             editButton.type = "button";
-            editButton.textContent = "Edit";
+            editButton.className = "edit-btn";
+            editButton.innerHTML = editIconSvg;
+            editButton.setAttribute("aria-label", "Edit");
+            editButton.setAttribute("data-tooltip", "Edit");
             editButton.addEventListener("click", () => {
               editingTodoId = t.id;
               renderTodos(todos);
@@ -936,7 +953,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const remove = document.createElement("button");
             remove.type = "button";
-            remove.textContent = "Delete";
+            remove.className = "delete-btn";
+            remove.innerHTML = deleteIconSvg;
+            remove.setAttribute("aria-label", "Delete");
+            remove.setAttribute("data-tooltip", "Delete");
             remove.addEventListener("click", () => {
               if (!confirm("Delete this task?")) return;
               const idx = todos.findIndex((item) => item.id === t.id);
@@ -1256,8 +1276,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const editButton = document.createElement("button");
           editButton.type = "button";
-          editButton.className = "new-ticket-btn";
-          editButton.textContent = "Edit";
+          editButton.className = "new-ticket-btn edit-btn";
+          editButton.innerHTML = editIconSvg;
+          editButton.setAttribute("aria-label", "Edit");
+          editButton.setAttribute("data-tooltip", "Edit");
           editButton.addEventListener("click", (event) => {
             event.preventDefault();
             editingLink = { categoryIndex, linkIndex };
@@ -1547,15 +1569,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const editButton = document.createElement("button");
           editButton.type = "button";
-          editButton.className = "new-ticket-btn";
-          editButton.textContent = "Edit";
+          editButton.className = "new-ticket-btn edit-btn";
+          editButton.innerHTML = editIconSvg;
+          editButton.setAttribute("aria-label", "Edit");
+          editButton.setAttribute("data-tooltip", "Edit");
           editButton.addEventListener("click", (event) => {
             event.preventDefault();
             editingFaqIndex = itemIndex;
             renderFaq();
           });
 
-          actions.appendChild(editButton);
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "new-ticket-btn delete-btn";
+          deleteButton.innerHTML = deleteIconSvg;
+          deleteButton.setAttribute("aria-label", "Delete");
+          deleteButton.setAttribute("data-tooltip", "Delete");
+          deleteButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (!confirm("Delete this FAQ item?")) return;
+            faqItems.splice(itemIndex, 1);
+            editingFaqIndex = null;
+            saveFaqToLocalStorage();
+            markUnsynced();
+            renderFaq();
+          });
+
+          actions.append(editButton, deleteButton);
           questionRow.append(question, actions);
 
           const answer = document.createElement("p");
@@ -1786,8 +1826,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const editButton = document.createElement("button");
           editButton.type = "button";
-          editButton.className = "new-ticket-btn";
-          editButton.textContent = "Edit";
+          editButton.className = "new-ticket-btn edit-btn";
+          editButton.innerHTML = editIconSvg;
+          editButton.setAttribute("aria-label", "Edit");
+          editButton.setAttribute("data-tooltip", "Edit");
           editButton.addEventListener("click", (event) => {
             event.preventDefault();
             editingContactIndex = contactIndex;
