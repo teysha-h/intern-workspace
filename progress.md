@@ -118,6 +118,9 @@ What to include:
 - Tested the functionality and buttons of entire workspace page
 - Unit testing files created in branch 'unit-testing'
 - Unit testing executed -> No errors detected and everything working well
+- Changed all 'edit' buttons to an icon. Shows the function when the cursor hovers over it.
+- Added a delete button to the FAQs
+- Changed all 'delete' buttons to an icon
 
 ### Next steps (after review):
 1. Add a dashboard with summary charts on home page 
