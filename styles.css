@@ -1065,3 +1065,176 @@ summary {
 .contact-edit-actions .new-ticket-btn:hover {
   background: var(--accent-hover);
 }
+/* ===== Square icon-based "Edit" buttons (pencil icon, rounded edges) =====
+   Every Edit button across the app now uses a square, icon-only shape with
+   softly rounded corners. Each button carries the .edit-btn class plus an
+   inline pencil SVG; the glyph inherits the surrounding button color through
+   stroke="currentColor". The context-specific overrides below preserve each
+   button's position while keeping it square where existing rules would
+   otherwise stretch it (e.g. the full-width ticket action column). */
+.edit-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+  position: relative;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.edit-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* Square icon-based "Delete" buttons (trash icon). They mirror the Edit
+   buttons so they sit side-by-side and stay aligned in the FAQ item actions
+   row, but are tinted with a destructive red to signal deletion. */
+.delete-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+  position: relative;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.delete-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* Ticket action column stretches its buttons to fill the column; keep the
+   Edit icon button square without moving it out of the existing flow. */
+.ticket-table td:last-child .ticket-action-btn.edit-btn {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Keep the Delete icon button square in the same full-width action column. */
+.ticket-table td:last-child .ticket-action-btn.delete-btn {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* To-do task buttons default to width:100% in the list; keep Edit square. */
+.todo-item > .todo-actions button.edit-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+}
+
+/* Keep Delete square in the same to-do actions column. */
+.todo-item > .todo-actions button.delete-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+}
+
+/* Links / FAQ / Contacts: drop the small pill padding to stay square. */
+.link-item .new-ticket-btn.edit-btn,
+.faq-item-actions .new-ticket-btn.edit-btn,
+.contact-item-actions .new-ticket-btn.edit-btn,
+.faq-item-actions .new-ticket-btn.delete-btn {
+  padding: 0;
+}
+
+/* FAQ / Tickets / To-Do Delete buttons: destructive red tint, kept the same
+   square size so they stay aligned with the Edit buttons beside them.
+   (Higher-specificity selectors override the shared per-context button rules.) */
+.faq-item-actions .new-ticket-btn.delete-btn,
+.ticket-table td:last-child .ticket-action-btn.delete-btn,
+.todo-item > .todo-actions button.delete-btn {
+  background: transparent;
+  border: 1px solid #f3c6c6;
+  color: #b91c1c;
+}
+
+.faq-item-actions .new-ticket-btn.delete-btn:hover,
+.ticket-table td:last-child .ticket-action-btn.delete-btn:hover,
+.todo-item > .todo-actions button.delete-btn:hover {
+  background: #fdecec;
+  border-color: #e5a3a3;
+}
+
+/* ===== Hover tooltip for the icon-only "Edit" buttons =====
+   A small popup that reads "Edit" appears above the pencil icon on hover,
+   fed by the button's data-tooltip attribute. Shown on hover and keyboard
+   focus so it stays accessible. */
+.edit-btn::after,
+.delete-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  transform: translateX(-50%) translateY(3px);
+  background: rgba(15, 23, 42, 0.92);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: "Helvetica", Geneva, sans-serif;
+  line-height: 1.3;
+  letter-spacing: 0.2px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  z-index: 20;
+}
+
+/* Small downward caret connecting the tooltip to the button. */
+.edit-btn::before,
+.delete-btn::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 3px);
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.92);
+  border-bottom: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  z-index: 20;
+}
+
+.edit-btn:hover::after,
+.edit-btn:focus-visible::after,
+.delete-btn:hover::after,
+.delete-btn:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.edit-btn:hover::before,
+.edit-btn:focus-visible::before,
+.delete-btn:hover::before,
+.delete-btn:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+}
