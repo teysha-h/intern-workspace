@@ -1,0 +1,27 @@
+{
+  "name": "intern-workspace",
+  "version": "1.0.0",
+  "description": "An internal workspace web application using HTML, CSS and JavaScript",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teysha-h/intern-workspace.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/teysha-h/intern-workspace/issues"
+  },
+  "homepage": "https://github.com/teysha-h/intern-workspace#readme",
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
+}
