@@ -110,3 +110,9 @@ What to include:
 - (8.5) Onboarding resources
 - (8.6) FAQ
 - (8.7) Contacts      
+
+
+## Thu - 20th August 2026
+### Completed tasks:
+- Debugged the 'unsynced changes' panel next to the save JSON button
+- Tested the functionality and buttons of entire workspace page
