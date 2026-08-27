@@ -133,6 +133,11 @@ section {
 
 .ticket-table {
   width: 100%;
+  /* Fixed layout makes the column widths come only from the header row and stay
+     identical between the read-only and edit views, so clicking Edit no longer
+     shifts or resizes the columns (auto layout would otherwise re-flow column
+     widths from each row's content each render). */
+  table-layout: fixed;
   border-collapse: collapse;
   margin-top: 1rem;
 }
@@ -147,33 +152,38 @@ section {
 
 .ticket-table th:nth-child(1),
 .ticket-table td:nth-child(1) {
-  width: 8%;
+  width: 7%;
   white-space: nowrap;
 }
 
 .ticket-table th:nth-child(2),
 .ticket-table td:nth-child(2) {
-  width: 18%;
+  width: 17%;
 }
 
 .ticket-table th:nth-child(3),
 .ticket-table td:nth-child(3) {
-  width: 10%;
+  width: 11%;
 }
 
 .ticket-table th:nth-child(4),
 .ticket-table td:nth-child(4) {
-  width: 9%;
+  width: 10%;
 }
 
 .ticket-table th:nth-child(5),
 .ticket-table td:nth-child(5) {
-  width: 44%;
+  width: 34%;
 }
 
 .ticket-table th:nth-child(6),
 .ticket-table td:nth-child(6) {
-  width: 12%;
+  width: 11%;
+}
+
+.ticket-table th:nth-child(7),
+.ticket-table td:nth-child(7) {
+  width: 10%;
 }
 
 .ticket-comments {
@@ -413,7 +423,9 @@ section {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 0.75rem;
+  /* Reduced horizontal margin so the icon buttons (edit / delete / add comment)
+     all fit comfortably within the fixed-width Actions column (10%). */
+  margin: 0 0.3rem;
   font-weight: 400;
   vertical-align: middle;
 }

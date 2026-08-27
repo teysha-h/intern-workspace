@@ -279,9 +279,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Formats a timestamp (ticket created date and comment timestamps) using the
+  // user's locale. Seconds are intentionally omitted so times read as
+  // e.g. "1:30 PM" rather than "1:30:45 PM".
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
-    return Number.isNaN(date.getTime()) ? timestamp : date.toLocaleString();
+    return Number.isNaN(date.getTime())
+      ? timestamp
+      : date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
   };
 
   const getNextTicketId = (tickets) => {
