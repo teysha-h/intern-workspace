@@ -298,6 +298,124 @@ document.addEventListener("DOMContentLoaded", () => {
     return copied.sort((a, b) => parseTicketId(a.id) - parseTicketId(b.id));
   };
 
+  // ===== Status donut chart (stored, not yet displayed) =====
+  // This prepares a donut chart for the ticket tracker's status column. Its
+  // structure and logic are fully built here and kept ready, but it is not
+  // added to the page until STATUS_CHART_ENABLED is flipped to true (ready to
+  // be turned on at a later time). The chart reflects the live ticket tracker
+  // automatically: it rebuilds inside renderTickets(), which is the single
+  // refresh path every ticket change (create / edit / change status / delete /
+  // add comment) runs through. Counts are shown as actual numbers, not
+  // percentages.
+  const STATUS_CHART_ENABLED = false; // flip to true later to display the donut
+  const STATUS_CHART_COLORS = {
+    Open: "#8a93a3",
+    "In Progress": "#f59e0b",
+    Resolved: "#22c55e",
+  };
+
+  const renderStatusChart = (tickets) => {
+    // Always keep every status present (even when its count is zero) so the
+    // slices and legend never disappear while the tracker is being used.
+    const statuses = ["Open", "In Progress", "Resolved"];
+    const counts = statuses.reduce((acc, status) => {
+      acc[status] = 0;
+      return acc;
+    }, {});
+    (tickets || []).forEach((ticket) => {
+      const status = String(ticket.status || "").trim();
+      if (Object.prototype.hasOwnProperty.call(counts, status)) {
+        counts[status] += 1;
+      }
+    });
+
+    const total = statuses.reduce((sum, status) => sum + counts[status], 0);
+
+    const wrap = document.createElement("div");
+    wrap.className = "status-chart";
+
+    const donutWrap = document.createElement("div");
+    donutWrap.className = "status-chart-donut";
+
+    const svgNs = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNs, "svg");
+    svg.setAttribute("viewBox", "0 0 120 120");
+    svg.setAttribute("width", "120");
+    svg.setAttribute("height", "120");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Tickets by status");
+
+    const cx = 60;
+    const cy = 60;
+    const r = 45;
+    const circumference = 2 * Math.PI * r;
+
+    // Full light-grey track ring that sits underneath the coloured slices.
+    const track = document.createElementNS(svgNs, "circle");
+    track.setAttribute("cx", cx);
+    track.setAttribute("cy", cy);
+    track.setAttribute("r", r);
+    track.setAttribute("fill", "none");
+    track.setAttribute("stroke", "#e2e8f0");
+    track.setAttribute("stroke-width", "16");
+    svg.appendChild(track);
+
+    if (total > 0) {
+      let cumulative = 0;
+      statuses.forEach((status) => {
+        if (counts[status] === 0) return;
+        const length = (counts[status] / total) * circumference;
+        const segment = document.createElementNS(svgNs, "circle");
+        segment.setAttribute("cx", cx);
+        segment.setAttribute("cy", cy);
+        segment.setAttribute("r", r);
+        segment.setAttribute("fill", "none");
+        segment.setAttribute("stroke", STATUS_CHART_COLORS[status]);
+        segment.setAttribute("stroke-width", "16");
+        segment.setAttribute("stroke-dasharray", `${length} ${circumference - length}`);
+        segment.setAttribute("stroke-dashoffset", -cumulative);
+        // Start the first slice at the top (12 o'clock) and stack clockwise.
+        segment.setAttribute("transform", `rotate(-90 ${cx} ${cy})`);
+        svg.appendChild(segment);
+        cumulative += length;
+      });
+    }
+
+    // The hollow middle of the donut shows the total number of tickets.
+    const center = document.createElement("div");
+    center.className = "status-chart-center";
+    const totalText = document.createElement("span");
+    totalText.className = "status-chart-center-value";
+    totalText.textContent = String(total);
+    const totalLabel = document.createElement("span");
+    totalLabel.className = "status-chart-center-label";
+    totalLabel.textContent = "Tickets";
+    center.append(totalText, totalLabel);
+    donutWrap.append(svg, center);
+
+    // Legend lists each status with its actual count.
+    const legend = document.createElement("ul");
+    legend.className = "status-chart-legend";
+    statuses.forEach((status) => {
+      const item = document.createElement("li");
+      item.className = "status-chart-legend-item";
+      const swatch = document.createElement("span");
+      swatch.className = "status-chart-legend-swatch";
+      swatch.style.background = STATUS_CHART_COLORS[status];
+      const label = document.createElement("span");
+      label.className = "status-chart-legend-label";
+      label.textContent = status;
+      const value = document.createElement("span");
+      value.className = "status-chart-legend-value";
+      value.textContent = `${counts[status]}`;
+      item.append(swatch, label, value);
+      legend.appendChild(item);
+    });
+
+    wrap.append(donutWrap, legend);
+    return wrap;
+  };
+
   const renderTickets = (tickets) => {
     clearTickets();
 
@@ -322,6 +440,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     header.appendChild(newTicketButton);
     ticketsSection.appendChild(header);
+
+    // The status donut is built and stored, but intentionally not shown until
+    // STATUS_CHART_ENABLED is flipped to true at a later time.
+    if (STATUS_CHART_ENABLED) {
+      ticketsSection.appendChild(renderStatusChart(allTickets));
+    }
 
     const sortForm = document.createElement("form");
     sortForm.className = "tickets-sort";

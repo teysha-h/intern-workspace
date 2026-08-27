@@ -1321,3 +1321,75 @@ summary {
   opacity: 1;
   visibility: visible;
 }
+/* ===== Status donut chart (stored, ready to be shown later) =====
+   These rules style the donut chart that summarises the ticket tracker's
+   status column. They are inactive until the chart is enabled in app.js
+   (STATUS_CHART_ENABLED), but are kept ready for when it is turned on. */
+.status-chart {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.status-chart-donut {
+  position: relative;
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+}
+
+.status-chart-donut svg {
+  display: block;
+}
+
+.status-chart-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.status-chart-center-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.status-chart-center-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.status-chart-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.status-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.status-chart-legend-swatch {
+  flex: 0 0 auto;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+}
+
+.status-chart-legend-value {
+  font-weight: 700;
+  min-width: 1.4rem;
+}
