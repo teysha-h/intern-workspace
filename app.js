@@ -298,16 +298,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return copied.sort((a, b) => parseTicketId(a.id) - parseTicketId(b.id));
   };
 
-  // ===== Status donut chart (stored, not yet displayed) =====
-  // This prepares a donut chart for the ticket tracker's status column. Its
-  // structure and logic are fully built here and kept ready, but it is not
-  // added to the page until STATUS_CHART_ENABLED is flipped to true (ready to
-  // be turned on at a later time). The chart reflects the live ticket tracker
-  // automatically: it rebuilds inside renderTickets(), which is the single
-  // refresh path every ticket change (create / edit / change status / delete /
-  // add comment) runs through. Counts are shown as actual numbers, not
-  // percentages.
-  const STATUS_CHART_ENABLED = false; // flip to true later to display the donut
+  // ===== Status donut chart (displayed in the Home section card) =====
+  // This builds a donut chart for the ticket tracker's status column and
+  // shows it in the Home section. It reflects the live ticket tracker
+  // automatically: it is re-rendered inside renderTickets(), which is the
+  // single refresh path every ticket change (create / edit / change status /
+  // delete / add comment) runs through. Counts are actual numbers, not
+  // percentages. The same builder is kept reusable if it is ever needed
+  // anywhere else.
   const STATUS_CHART_COLORS = {
     Open: "#8a93a3",
     "In Progress": "#f59e0b",
@@ -416,6 +414,16 @@ document.addEventListener("DOMContentLoaded", () => {
     return wrap;
   };
 
+  const homeStatusCanvas = document.querySelector("#home-status-chart .home-status-chart-canvas");
+
+  // Draw the donut into the Home section card with the latest ticket statuses.
+  // Called from renderTickets() so it refreshes whenever the tracker changes.
+  const renderHomeStatusChart = () => {
+    if (!homeStatusCanvas) return;
+    homeStatusCanvas.innerHTML = "";
+    homeStatusCanvas.appendChild(renderStatusChart(allTickets));
+  };
+
   const renderTickets = (tickets) => {
     clearTickets();
 
@@ -441,11 +449,8 @@ document.addEventListener("DOMContentLoaded", () => {
     header.appendChild(newTicketButton);
     ticketsSection.appendChild(header);
 
-    // The status donut is built and stored, but intentionally not shown until
-    // STATUS_CHART_ENABLED is flipped to true at a later time.
-    if (STATUS_CHART_ENABLED) {
-      ticketsSection.appendChild(renderStatusChart(allTickets));
-    }
+    // Keep the Home-section status chart in sync with the tracker.
+    renderHomeStatusChart();
 
     const sortForm = document.createElement("form");
     sortForm.className = "tickets-sort";

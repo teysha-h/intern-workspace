@@ -1393,3 +1393,18 @@ summary {
   font-weight: 700;
   min-width: 1.4rem;
 }
+
+/* Home section: wrapper around the status donut shown in the Home card. */
+.home-status-chart {
+  margin-top: 1rem;
+}
+
+.home-status-chart h3 {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.home-status-chart-canvas {
+  display: flex;
+  justify-content: center;
+}
