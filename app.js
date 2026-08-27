@@ -28,6 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteIconSvg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
 
+  // Check/tick icon used by every "Mark done" / "Mark open" toggle button
+  // (matches the Feather icon set of the pencil Edit and trash Delete icons).
+  // It inherits the button's text color via stroke="currentColor".
+  const doneIconSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
   // Comment bubble with a "+" glyph used by every "Add comment" button
   // (matches the Feather icon set of the pencil Edit and trash Delete icons).
   // It inherits the button's text color via stroke="currentColor".
@@ -911,8 +917,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const toggle = document.createElement("button");
             toggle.type = "button";
-            toggle.className = "todo-done-btn";
-            toggle.textContent = t.completed ? "Mark open" : "Mark done";
+            toggle.className = "todo-done-btn done-btn";
+            toggle.innerHTML = doneIconSvg;
+            toggle.setAttribute("aria-label", t.completed ? "Mark open" : "Mark done");
+            toggle.setAttribute("data-tooltip", t.completed ? "Mark open" : "Mark done");
             toggle.addEventListener("click", () => {
               t.completed = !t.completed;
               saveTodosToLocalStorage(todos);

@@ -1145,6 +1145,30 @@ summary {
   display: block;
 }
 
+/* Square icon-based "Mark done" buttons (check/tick icon) in the shared to-do.
+   They mirror the Edit and Delete buttons so they sit side-by-side and stay
+   aligned in the to-do actions column, but keep the existing green tint from
+   the .todo-done-btn colour rule. */
+.done-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+  position: relative;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.done-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
 /* Ticket action column stretches its buttons to fill the column; keep the
    Edit icon button square without moving it out of the existing flow. */
 .ticket-table td:last-child .ticket-action-btn.edit-btn {
@@ -1190,6 +1214,13 @@ summary {
   padding: 0;
 }
 
+/* Keep the Mark-done toggle square in the same to-do actions column. */
+.todo-item > .todo-actions button.done-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+}
+
 /* Links / FAQ / Contacts: drop the small pill padding to stay square. */
 .link-item .new-ticket-btn.edit-btn,
 .faq-item-actions .new-ticket-btn.edit-btn,
@@ -1222,7 +1253,8 @@ summary {
    focus so it stays accessible. */
 .edit-btn::after,
 .delete-btn::after,
-.add-comment-btn::after {
+.add-comment-btn::after,
+.done-btn::after {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
@@ -1248,7 +1280,8 @@ summary {
 /* Small downward caret connecting the tooltip to the button. */
 .edit-btn::before,
 .delete-btn::before,
-.add-comment-btn::before {
+.add-comment-btn::before,
+.done-btn::before {
   content: "";
   position: absolute;
   left: 50%;
@@ -1269,7 +1302,9 @@ summary {
 .delete-btn:hover::after,
 .delete-btn:focus-visible::after,
 .add-comment-btn:hover::after,
-.add-comment-btn:focus-visible::after {
+.add-comment-btn:focus-visible::after,
+.done-btn:hover::after,
+.done-btn:focus-visible::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
@@ -1280,7 +1315,9 @@ summary {
 .delete-btn:hover::before,
 .delete-btn:focus-visible::before,
 .add-comment-btn:hover::before,
-.add-comment-btn:focus-visible::before {
+.add-comment-btn:focus-visible::before,
+.done-btn:hover::before,
+.done-btn:focus-visible::before {
   opacity: 1;
   visibility: visible;
 }
