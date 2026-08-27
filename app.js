@@ -2142,4 +2142,128 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", applyRoute);
   applyRoute();
 
+  // ===== Login "who are you?" popup + signed-in badge =====
+  // Shows a modal overlay once per browser session (sessionStorage) and keeps a
+  // small "signed in as" badge in the top-right corner that reflects the saved
+  // identity. The list of people is read live from the existing Team section
+  // (#team-list) so it always matches the roster on the page and never needs a
+  // duplicated copy. Everything here is self-contained: it only appends overlay
+  // and badge markup on top of the already-functional page without re-wiring
+  // any existing logic.
+  (function initLoginPopup() {
+    const userStorageKey = "intern-workspace-current-user";
+
+    // Builds/updates the persistent badge that shows who is signed in. If no
+    // member is provided the badge is left in place (the popup just closes).
+    const renderUserBadge = (member) => {
+      if (!member || !member.name) return;
+      let badge = document.getElementById("signed-in-badge");
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "signed-in-badge";
+        badge.className = "signed-in-badge";
+        document.body.appendChild(badge);
+      }
+
+      badge.innerHTML = "";
+      const label = document.createElement("span");
+      label.className = "signed-in-badge-label";
+      label.textContent = "Signed in as";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "signed-in-badge-name";
+      nameSpan.textContent = member.name;
+
+      if (member.admin) badge.classList.add("admin");
+      else badge.classList.remove("admin");
+
+      if (member.role) badge.setAttribute("data-role", member.role);
+      badge.append(label, nameSpan);
+    };
+
+    // 1. If an identity is already recorded for this session, just show the
+    //    badge and skip the popup.
+    let storedUser = null;
+    try {
+      const raw = sessionStorage.getItem(userStorageKey);
+      if (raw) storedUser = JSON.parse(raw);
+    } catch (e) {
+      // If sessionStorage is unavailable, still show the popup.
+    }
+    if (storedUser) {
+      renderUserBadge(storedUser);
+      return;
+    }
+
+    // 2. Read the team roster from the existing Team section markup.
+    const teamCards = document.querySelectorAll("#team-list .contact-item.team-member");
+    if (!teamCards.length) return; // no roster to choose from; skip silently
+
+    const members = Array.from(teamCards).map((card) => ({
+      name: (card.querySelector("h3") ? card.querySelector("h3").textContent.trim() : "") || "Unknown",
+      role: (card.querySelector(".contact-role") ? card.querySelector(".contact-role").textContent.trim() : "") || "Member",
+      admin: card.classList.contains("admin"),
+    }));
+
+    // 3. Build the overlay and card.
+    const overlay = document.createElement("div");
+    overlay.className = "login-modal";
+
+    const card = document.createElement("div");
+    card.className = "login-modal-card";
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-modal", "true");
+
+    const title = document.createElement("h2");
+    title.id = "login-modal-title";
+    title.className = "login-modal-title";
+    title.textContent = "Welcome — who are you?";
+
+    const prompt = document.createElement("p");
+    prompt.className = "login-modal-prompt";
+    prompt.textContent = "Select your name so the team knows who is signed in.";
+
+    const options = document.createElement("div");
+    options.className = "login-modal-options";
+
+    const close = () => {
+      try {
+        overlay.remove();
+      } catch (err) {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }
+    };
+
+    members.forEach((member) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "login-modal-option";
+      if (member.admin) button.classList.add("admin");
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "login-modal-name";
+      nameSpan.textContent = member.name;
+
+      const roleSpan = document.createElement("span");
+      roleSpan.className = "login-modal-role";
+      roleSpan.textContent = member.role;
+
+      button.append(nameSpan, roleSpan);
+      button.addEventListener("click", () => {
+        try {
+          sessionStorage.setItem(userStorageKey, JSON.stringify(member));
+        } catch (e) {
+          // Non-fatal: popup still closes and the page remains fully usable.
+        }
+        renderUserBadge(member);
+        close();
+      });
+      options.appendChild(button);
+    });
+
+    card.append(title, prompt, options);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+  })();
+
 });

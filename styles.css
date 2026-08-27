@@ -1553,3 +1553,154 @@ summary {
   grid-template-columns: repeat(auto-fill, minmax(220px, 240px));
   justify-content: start;
 }
+
+/* ===== Login "who are you?" popup =====
+   Full-screen modal overlay shown once per browser session. It sits on top of
+   the page (does not affect layout or the hash router) and reuses the app's
+   CSS variables so it looks native to the existing card design. */
+.login-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+  overscroll-behavior: contain;
+}
+
+.login-modal-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.18);
+  padding: 1.5rem 1.5rem 1.6rem;
+  text-align: center;
+}
+
+.login-modal-title {
+  margin: 0 0 0.25rem;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.login-modal-prompt {
+  margin: 0 0 1.1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.login-modal-options {
+  display: grid;
+  grid-auto-flow: row;
+  gap: 0.6rem;
+}
+
+.login-modal-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.login-modal-option:hover,
+.login-modal-option:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  outline: none;
+}
+
+.login-modal-option .login-modal-name {
+  font-weight: 600;
+}
+
+.login-modal-option .login-modal-role {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.login-modal-option.admin {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.login-modal-option.admin .login-modal-role {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 480px) {
+  .login-modal-card {
+    padding: 1.25rem 1.1rem 1.3rem;
+  }
+
+  .login-modal-option {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
+
+/* ===== Signed-in badge (top-right corner) =====
+   Small persistent chip that shows which team member signed in. It floats in
+   the top-right corner above the page content and reuses the app variables. */
+.signed-in-badge {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.signed-in-badge .signed-in-badge-label {
+  color: var(--muted);
+}
+
+.signed-in-badge .signed-in-badge-name {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.signed-in-badge.admin {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+@media (max-width: 480px) {
+  .signed-in-badge {
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
