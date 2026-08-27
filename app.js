@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const saveEditingTicket = async (ticketId, fields) => {
-    const { titleInput, ownerInput, statusSelect } = fields;
+    const { titleInput, ownerInput, statusSelect, commentsInput } = fields;
     if (!titleInput.checkValidity() || !ownerInput.checkValidity() || !statusSelect.checkValidity()) {
       titleInput.reportValidity();
       ownerInput.reportValidity();
@@ -124,7 +124,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const owner = String(ownerInput.value || "").trim();
     const status = String(statusSelect.value || "").trim();
     const currentTicket = allTickets.find((ticket) => ticket.id === ticketId);
-    const comments = currentTicket?.comments || [];
+    // parseComments refreshes the timestamp for added/edited lines (they no
+    // longer match an existing comment) while keeping the original timestamp
+    // for lines that were left untouched.
+    const comments = parseComments(commentsInput?.value, currentTicket?.comments || []);
 
     if (!title || !owner || !status) {
       return;
@@ -539,21 +542,11 @@ document.addEventListener("DOMContentLoaded", () => {
         row.appendChild(statusCell);
 
         const commentsCell = document.createElement("td");
-        const commentsContainer = document.createElement("div");
-        commentsContainer.className = "ticket-comments";
-        if (Array.isArray(ticket.comments) && ticket.comments.length) {
-          ticket.comments.forEach((comment) => {
-            const commentLine = document.createElement("div");
-            commentLine.className = "ticket-comment-item";
-            commentLine.textContent = `${comment.text} (${formatTimestamp(comment.timestamp)})`;
-            commentsContainer.appendChild(commentLine);
-          });
-        } else {
-          const noComments = document.createElement("span");
-          noComments.textContent = "No comments yet";
-          commentsContainer.appendChild(noComments);
-        }
-        commentsCell.appendChild(commentsContainer);
+        const commentsInput = document.createElement("textarea");
+        commentsInput.name = "comments";
+        commentsInput.rows = 3;
+        commentsInput.value = commentsToTextarea(ticket.comments);
+        commentsCell.appendChild(commentsInput);
         row.appendChild(commentsCell);
 
         row.appendChild(createTextCell(formatTimestamp(ticket.timestamp)));
@@ -565,30 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
         saveButton.textContent = "Save";
         saveButton.addEventListener("click", async (event) => {
           event.preventDefault();
-          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect });
-        });
-
-        const addCommentButton = document.createElement("button");
-        addCommentButton.type = "button";
-        addCommentButton.className = "new-ticket-btn ticket-action-btn";
-        addCommentButton.textContent = "Add comment";
-        addCommentButton.addEventListener("click", async (event) => {
-          event.preventDefault();
-          const commentText = String(prompt("Enter a new comment:") || "").trim();
-          if (!commentText) return;
-
-          const newComment = { text: commentText, timestamp: new Date().toISOString() };
-          allTickets = allTickets.map((item) => {
-            if (item.id !== ticket.id) return item;
-            return {
-              ...item,
-              comments: Array.isArray(item.comments) ? [...item.comments, newComment] : [newComment],
-            };
-          });
-
-          saveToLocalStorage(allTickets);
-          markUnsynced();
-          renderTickets(allTickets);
+          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect, commentsInput });
         });
 
         const cancelButton = document.createElement("button");
@@ -600,7 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
           cancelEditingTicket();
         });
 
-        actionsCell.append(saveButton, addCommentButton, cancelButton);
+        actionsCell.append(saveButton, cancelButton);
         row.appendChild(actionsCell);
       } else {
         row.appendChild(createTextCell(ticket.id || ""));
