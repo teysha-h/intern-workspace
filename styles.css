@@ -430,44 +430,69 @@ section {
   vertical-align: middle;
 }
 
-/* Shared To-Do: add-task form matching the ticket form styling, with extra spacing */
+/* Shared To-Do: add-task form styled to match the Team "add member" box
+   (see .contact-edit-form / .team-add-form): a compact single row of fields
+   with the submit button aligned at the end. */
 .todo-form {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: 1.5fr 1fr 1.5fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  width: 100%;
   margin: 0.5rem 0 1rem;
-  padding: 0.85rem;
+  padding: 0.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--tint);
-}
-
-.todo-form h3 {
-  margin: 0 0 0.25rem;
-  grid-column: 1 / -1;
-  font-size: 0.95rem;
 }
 
 .todo-form label {
   display: grid;
   gap: 0.25rem;
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
-.todo-form input {
+.todo-form input,
+.todo-form select {
   width: 100%;
-  padding: 0.35rem 0.5rem;
+  padding: 0.4rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font: inherit;
   box-sizing: border-box;
 }
 
+.todo-form select {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
 .todo-form-actions {
   align-self: end;
   display: flex;
   align-items: flex-end;
+}
+
+/* The add-task submit button mirrors the team add-member button. */
+.todo-form-actions .new-ticket-btn {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: var(--radius-lg);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.todo-form-actions .new-ticket-btn:hover {
+  background: var(--accent-hover);
 }
 
 

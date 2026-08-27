@@ -1491,7 +1491,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.createElement("form");
     form.className = "todo-form";
     form.innerHTML = `
-      <h3>Add shared task</h3>
       <label>Task<input name="task" required /></label>
       <label class="todo-form-owner">Owner</label>
       <label>Due date<input name="dueDate" type="date" /></label>
@@ -1524,7 +1523,15 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
     });
 
-    container.appendChild(form);
+    // Place the add-task box directly beneath the filter/sorting bar and above
+    // the task list. When there is no filter bar (no tasks yet), keep the form
+    // at the end, right after the empty-state message.
+    const filterBar = container.querySelector(".todo-filters");
+    if (filterBar) {
+      filterBar.after(form);
+    } else {
+      container.appendChild(form);
+    }
     todoSection.appendChild(container);
 
     // Keep the Dashboard shared to-do completion gauge in sync with the current
