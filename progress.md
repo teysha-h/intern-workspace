@@ -143,6 +143,6 @@ What to include:
 
 ## Thu - 27th August 2026
 ### Completed tasks:
-- Added a delete button to the FAQs
-- Changed all 'delete' buttons to an icon
-
+- Made comments in ticket-tracker editable
+- Changed 'add comment' button in ticket-tracker to an icon
+- Changed 'mark done' button in todo to an icon
