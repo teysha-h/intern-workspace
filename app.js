@@ -39,7 +39,42 @@ document.addEventListener("DOMContentLoaded", () => {
   // It inherits the button's text color via stroke="currentColor".
   const commentIconSvg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
+  // Owner dropdowns for the ticket tracker and the shared to-do read the live
+  // team roster (admin included) from the existing Team section (#team-list) so
+  // the choices always match the people on the page and never need a duplicated
+  // copy or a change to data.json.
+  const getTeamMembers = () => {
+    const cards = document.querySelectorAll("#team-list .contact-item.team-member");
+    return Array.from(cards)
+      .map((card) => (card.querySelector("h3") ? card.querySelector("h3").textContent.trim() : ""))
+      .filter(Boolean);
+  };
+
+  // Builds an <select name="owner" required> listing every team member, with an
+  // empty "Select owner" first option so required validation still applies.
+  const buildOwnerSelect = (selected = "") => {
+    const select = document.createElement("select");
+    select.name = "owner";
+    select.required = true;
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select owner";
+    select.appendChild(placeholder);
+
+    getTeamMembers().forEach((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      if (selected && selected === name) option.selected = true;
+      select.appendChild(option);
+    });
+
+    return select;
+  };
+
   const normalizeComments = (comments, fallbackTimestamp) => {
+
     if (!comments) return [];
     if (Array.isArray(comments)) {
       return comments
@@ -530,7 +565,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </label>
         <label class="ticket-form-field ticket-form-owner">
           Owner
-          <input name="owner" required />
         </label>
         <label class="ticket-form-field ticket-form-status">
           Status
@@ -551,7 +585,12 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
 
+      // Owner is chosen from the live team roster dropdown (admin included).
+      const ownerField = form.querySelector(".ticket-form-owner");
+      if (ownerField) ownerField.appendChild(buildOwnerSelect());
+
       form.addEventListener("submit", (event) => {
+
         event.preventDefault();
 
         if (!form.reportValidity()) {
@@ -652,10 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.appendChild(titleCell);
 
         const ownerCell = document.createElement("td");
-        const ownerInput = document.createElement("input");
-        ownerInput.name = "owner";
-        ownerInput.required = true;
-        ownerInput.value = ticket.owner || "";
+        const ownerInput = buildOwnerSelect(ticket.owner || "");
         ownerCell.appendChild(ownerInput);
         row.appendChild(ownerCell);
 
@@ -998,10 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
             taskInput.placeholder = "Task";
             taskInput.value = t.task || "";
 
-            const ownerInput = document.createElement("input");
-            ownerInput.name = "owner";
-            ownerInput.placeholder = "Owner";
-            ownerInput.value = t.owner || "";
+            const ownerInput = buildOwnerSelect(t.owner || "");
 
             const dueDateInput = document.createElement("input");
             dueDateInput.name = "dueDate";
@@ -1103,14 +1136,19 @@ document.addEventListener("DOMContentLoaded", () => {
     form.innerHTML = `
       <h3>Add shared task</h3>
       <label>Task<input name="task" required /></label>
-      <label>Owner<input name="owner" required /></label>
+      <label class="todo-form-owner">Owner</label>
       <label>Due date<input name="dueDate" type="date" /></label>
       <div class="todo-form-actions">
         <button type="submit" class="new-ticket-btn">Add</button>
       </div>
     `;
 
+    // Owner is chosen from the live team roster dropdown (admin included).
+    const todoOwnerLabel = form.querySelector(".todo-form-owner");
+    if (todoOwnerLabel) todoOwnerLabel.appendChild(buildOwnerSelect());
+
     form.addEventListener("submit", (e) => {
+
       e.preventDefault();
       const fd = new FormData(form);
       const task = String(fd.get("task") || "").trim();

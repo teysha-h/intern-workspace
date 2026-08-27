@@ -3,7 +3,7 @@
     {
       "id": "T-0003",
       "title": "computer not working",
-      "owner": "peter",
+      "owner": "Taylor Brooks",
       "status": "Resolved",
       "comments": [
         {
@@ -20,7 +20,7 @@
     {
       "id": "T-0004",
       "title": "syncing test",
-      "owner": "peter",
+      "owner": "Morgan Lee",
       "status": "In Progress",
       "comments": [
         {
@@ -33,7 +33,7 @@
     {
       "id": "T-0005",
       "title": "sorting test",
-      "owner": "teysha",
+      "owner": "Taylor Brooks",
       "status": "Resolved",
       "comments": [
         {
@@ -46,7 +46,7 @@
     {
       "id": "T-0007",
       "title": "ticket tracker test",
-      "owner": "teysha",
+      "owner": "Morgan Lee",
       "status": "In Progress",
       "comments": [
         {
@@ -59,7 +59,7 @@
     {
       "id": "T-0008",
       "title": "General page testing",
-      "owner": "bottle",
+      "owner": "Jordan Kim",
       "status": "Open",
       "comments": [
         {
@@ -74,10 +74,18 @@
     {
       "id": "0ac92ec7-3058-419c-8eb5-707fa8464d75",
       "task": "testing 1",
-      "owner": "teysha",
+      "owner": "Jamie Rivera",
       "dueDate": "2026-08-14T00:00:00.000Z",
       "completed": false,
       "createdAt": "2026-08-13T01:23:36.051Z"
+    },
+    {
+      "id": "c8c7e634-2cea-43d9-8a83-68c70a42c21f",
+      "task": "testing 2",
+      "owner": "Morgan Lee",
+      "dueDate": "2026-08-29T00:00:00.000Z",
+      "completed": true,
+      "createdAt": "2026-08-27T03:17:38.785Z"
     }
   ],
   "onboarding": [
