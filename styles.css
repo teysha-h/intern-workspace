@@ -1126,6 +1126,30 @@ summary {
   display: block;
 }
 
+/* Square icon-based "Add comment" buttons (comment-bubble plus "+" icon).
+   They mirror the Edit and Delete buttons so they sit side-by-side and stay
+   aligned in the ticket action column, using the same grey tint that the
+   shared .ticket-action-btn:not(.cancel) rule already provides. */
+.add-comment-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+  position: relative;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.add-comment-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
 /* Ticket action column stretches its buttons to fill the column; keep the
    Edit icon button square without moving it out of the existing flow. */
 .ticket-table td:last-child .ticket-action-btn.edit-btn {
@@ -1139,6 +1163,16 @@ summary {
 
 /* Keep the Delete icon button square in the same full-width action column. */
 .ticket-table td:last-child .ticket-action-btn.delete-btn {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Keep the Add comment icon button square in the same full-width action column. */
+.ticket-table td:last-child .ticket-action-btn.add-comment-btn {
   flex: 0 0 auto;
   width: 1.75rem;
   height: 1.75rem;
@@ -1192,7 +1226,8 @@ summary {
    fed by the button's data-tooltip attribute. Shown on hover and keyboard
    focus so it stays accessible. */
 .edit-btn::after,
-.delete-btn::after {
+.delete-btn::after,
+.add-comment-btn::after {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
@@ -1217,7 +1252,8 @@ summary {
 
 /* Small downward caret connecting the tooltip to the button. */
 .edit-btn::before,
-.delete-btn::before {
+.delete-btn::before,
+.add-comment-btn::before {
   content: "";
   position: absolute;
   left: 50%;
@@ -1236,7 +1272,9 @@ summary {
 .edit-btn:hover::after,
 .edit-btn:focus-visible::after,
 .delete-btn:hover::after,
-.delete-btn:focus-visible::after {
+.delete-btn:focus-visible::after,
+.add-comment-btn:hover::after,
+.add-comment-btn:focus-visible::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
@@ -1245,7 +1283,9 @@ summary {
 .edit-btn:hover::before,
 .edit-btn:focus-visible::before,
 .delete-btn:hover::before,
-.delete-btn:focus-visible::before {
+.delete-btn:focus-visible::before,
+.add-comment-btn:hover::before,
+.add-comment-btn:focus-visible::before {
   opacity: 1;
   visibility: visible;
 }

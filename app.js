@@ -27,6 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // stroke="currentColor".
   const deleteIconSvg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+
+  // Comment bubble with a "+" glyph used by every "Add comment" button
+  // (matches the Feather icon set of the pencil Edit and trash Delete icons).
+  // It inherits the button's text color via stroke="currentColor".
+  const commentIconSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>';
   const normalizeComments = (comments, fallbackTimestamp) => {
     if (!comments) return [];
     if (Array.isArray(comments)) {
@@ -599,8 +605,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const actionsCell = document.createElement("td");
         const addCommentButton = document.createElement("button");
         addCommentButton.type = "button";
-        addCommentButton.className = "new-ticket-btn ticket-action-btn";
-        addCommentButton.textContent = "Add comment";
+        addCommentButton.className = "new-ticket-btn ticket-action-btn add-comment-btn";
+        addCommentButton.innerHTML = commentIconSvg;
+        addCommentButton.setAttribute("aria-label", "Add comment");
+        addCommentButton.setAttribute("data-tooltip", "Add comment");
         addCommentButton.addEventListener("click", async (event) => {
           event.preventDefault();
           const commentText = String(prompt("Enter a new comment:") || "").trim();
