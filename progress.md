@@ -135,6 +135,7 @@ What to include:
 - Changed all 'edit' buttons to an icon. Shows the function when the cursor hovers over it.
 - Did research into diagrams for conveying projects (actor, sequence, use case)
 
+
 ## Mon - 24th August 2026
 ### Completed tasks:
 - Added a delete button to the FAQs
@@ -146,3 +147,4 @@ What to include:
 - Made comments in ticket-tracker editable
 - Changed 'add comment' button in ticket-tracker to an icon
 - Changed 'mark done' button in todo to an icon
+- Charts created to display ticket and to-do status on dashboard 
