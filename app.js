@@ -73,6 +73,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return select;
   };
 
+  // Visual marker for owners whose value is "Unassigned" (e.g. set when their
+  // team member was removed from the roster). Purely cosmetic: it only changes
+  // how the owner text looks in the Ticket tracker and shared To-Do list -
+  // stored values, filters and editing behaviour are completely untouched.
+  const isUnassignedOwner = (value) =>
+    String(value || "").trim().toLowerCase() === "unassigned";
+
+  const buildOwnerBadge = () => {
+    const span = document.createElement("span");
+    span.className = "owner-unassigned";
+    span.textContent = "Unassigned";
+    return span;
+  };
+
   // ===== Team / Admin control =====
   // The Team roster is data-driven (single source of truth held here) instead of
   // duplicated in index.html. It is seeded from the existing hard-coded cards in
@@ -215,9 +229,38 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteButton.addEventListener("click", (event) => {
           event.preventDefault();
           if (!confirm(`Remove ${member.name} from the team?`)) return;
+          const removedName = String(member.name || "").trim();
           teamMembers.splice(index, 1);
           editingTeamMemberIndex = null;
           saveTeamToLocalStorage();
+
+          // Keep every ticket/shared to-do owned by the removed member, but
+          // change its owner to "Unassigned" so no owner field keeps pointing
+          // at someone who is no longer on the team. Only the owner string
+          // changes; items are never deleted here.
+          if (removedName) {
+            let reassignedTickets = 0;
+            if (Array.isArray(allTickets)) {
+              allTickets.forEach((ticket) => {
+                if (String(ticket.owner || "").trim() === removedName) {
+                  ticket.owner = "Unassigned";
+                  reassignedTickets += 1;
+                }
+              });
+              if (reassignedTickets > 0) saveToLocalStorage(allTickets);
+            }
+
+            const todosList = Array.isArray(window._sharedTodos) ? window._sharedTodos : [];
+            let reassignedTodos = 0;
+            todosList.forEach((todo) => {
+              if (String(todo.owner || "").trim() === removedName) {
+                todo.owner = "Unassigned";
+                reassignedTodos += 1;
+              }
+            });
+            if (reassignedTodos > 0) saveTodosToLocalStorage(todosList);
+          }
+
           markUnsynced();
           rerenderOwnerConsumers();
           renderTeam();
@@ -1113,7 +1156,13 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         row.appendChild(createTextCell(ticket.id || ""));
         row.appendChild(createTextCell(ticket.title || ""));
-        row.appendChild(createTextCell(ticket.owner || ""));
+        const ownerCell = document.createElement("td");
+        if (isUnassignedOwner(ticket.owner)) {
+          ownerCell.appendChild(buildOwnerBadge());
+        } else {
+          ownerCell.textContent = ticket.owner || "";
+        }
+        row.appendChild(ownerCell);
         row.appendChild(createTextCell(ticket.status || ""));
 
         const commentsCell = document.createElement("td");
@@ -1434,7 +1483,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const meta = document.createElement("div");
             meta.className = "todo-meta";
-            meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+            if (isUnassignedOwner(t.owner)) {
+              // Same visible text as before, just wrapped so the owner word gets
+              // the pale-red "owner-unassigned" styling.
+              meta.append(
+                buildOwnerBadge(),
+                document.createTextNode(` • due ${formatDueDate(t.dueDate || "")}`)
+              );
+            } else {
+              meta.textContent = `${t.owner || ""} • due ${formatDueDate(t.dueDate || "")}`;
+            }
 
             const toggle = document.createElement("button");
             toggle.type = "button";

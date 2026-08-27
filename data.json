@@ -20,7 +20,7 @@
     {
       "id": "T-0004",
       "title": "syncing test",
-      "owner": "Morgan Lee",
+      "owner": "Jamie Rivera",
       "status": "In Progress",
       "comments": [
         {
@@ -46,7 +46,7 @@
     {
       "id": "T-0007",
       "title": "ticket tracker test",
-      "owner": "Morgan Lee",
+      "owner": "Barry Allen",
       "status": "In Progress",
       "comments": [
         {
@@ -59,7 +59,7 @@
     {
       "id": "T-0008",
       "title": "General page testing",
-      "owner": "Jordan Kim",
+      "owner": "Taylor Brooks",
       "status": "Open",
       "comments": [
         {
@@ -90,7 +90,7 @@
     {
       "id": "c8c7e634-2cea-43d9-8a83-68c70a42c21f",
       "task": "testing 2",
-      "owner": "Morgan Lee",
+      "owner": "Barry Allen",
       "dueDate": "2026-08-29T00:00:00.000Z",
       "completed": true,
       "createdAt": "2026-08-27T03:17:38.785Z"
@@ -178,33 +178,21 @@
       "admin": false
     },
     {
-      "name": "Casey Nguyen",
-      "role": "Member",
-      "email": "casey.nguyen@example.com",
-      "admin": false
-    },
-    {
-      "name": "Morgan Lee",
-      "role": "Member",
-      "email": "morgan.lee@example.com",
-      "admin": false
-    },
-    {
       "name": "Taylor Brooks",
       "role": "Member",
       "email": "taylor.brooks@example.com",
       "admin": false
     },
     {
-      "name": "Jordan Kim",
-      "role": "Member",
-      "email": "jordan.kim@example.com",
-      "admin": false
-    },
-    {
       "name": "Barry Allen",
       "role": "Member",
       "email": "barry.allen@example.com",
+      "admin": false
+    },
+    {
+      "name": "Jordan Kim",
+      "role": "Member",
+      "email": "jordan.kim@example.com",
       "admin": false
     }
   ]

@@ -571,6 +571,24 @@ ul.todo-list {
   font-size: 0.9rem;
 }
 
+/* Pale-red badge marking owners that are currently "Unassigned" (set when
+   their team member was removed from the roster). Shown in both the Ticket
+   tracker's owner column and the shared To-Do meta line. Cosmetic only -
+   the same plain text is displayed; no data or behaviour changes.
+   Colours reuse the destructive-red family already used by .delete-btn. */
+.owner-unassigned {
+  display: inline-block;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: #fdecec;
+  border: 1px solid #f3c6c6;
+  color: #b3261e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 /* Unified small, thin buttons for todo actions */
 .todo-item > .todo-actions button {
   width: 100%;
