@@ -118,9 +118,6 @@ What to include:
 - Tested the functionality and buttons of entire workspace page
 - Unit testing files created in branch 'unit-testing'
 - Unit testing executed -> No errors detected and everything working well
-- Changed all 'edit' buttons to an icon. Shows the function when the cursor hovers over it.
-- Added a delete button to the FAQs
-- Changed all 'delete' buttons to an icon
 
 ### Next steps (after review):
 1. Add a dashboard with summary charts on home page 
@@ -130,4 +127,22 @@ What to include:
 5. Owner for the ticket is selected from a drop down of team members
 6. Include a delete button for FAQs
 7. Make comments in the ticket-tracker editable
-8. Use icons instead of buttons for actions
+8. Use icons instead of buttons for actions     
+
+
+## Fri - 21st August 2026
+### Completed tasks:
+- Changed all 'edit' buttons to an icon. Shows the function when the cursor hovers over it.
+- Did research into diagrams for conveying projects (actor, sequence, use case)
+
+## Mon - 24th August 2026
+### Completed tasks:
+- Added a delete button to the FAQs
+- Changed all 'delete' buttons to an icon   
+
+
+## Thu - 27th August 2026
+### Completed tasks:
+- Added a delete button to the FAQs
+- Changed all 'delete' buttons to an icon
+
