@@ -73,6 +73,178 @@ document.addEventListener("DOMContentLoaded", () => {
     return select;
   };
 
+  // ----- Wrap-capable dropdowns (ticket edit row) --------------------------
+  // Native <select> elements cannot wrap their text: the closed value and
+  // the browser-drawn popup always stay single-line no matter what CSS says.
+  // The ticket editor therefore uses this small custom listbox so long owner
+  // names and status labels wrap instead of being clipped, consistent with
+  // the multiline title/comment boxes. Every other dropdown on the page
+  // keeps its native <select>: deliberately scoped to the ticket edit row.
+  //
+  // The returned object mimics the few native-select behaviours that
+  // saveEditingTicket() relies on (.value, .checkValidity(),
+  // .reportValidity()), so saving and validation logic stays unchanged.
+  let wrappingDropdownDismissBound = false;
+  const bindWrappingDropdownDismissal = () => {
+    if (wrappingDropdownDismissBound) return;
+    wrappingDropdownDismissBound = true;
+
+    // Clicking anywhere outside an open dropdown closes it.
+    document.addEventListener("click", (event) => {
+      document.querySelectorAll(".wrapping-dropdown[data-open]").forEach((dropdown) => {
+        if (!dropdown.contains(event.target)) setWrappingDropdownOpen(dropdown, false);
+      });
+    });
+
+    // Escape closes the open dropdown and returns focus to its toggle.
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      const dropdown = document.querySelector(".wrapping-dropdown[data-open]");
+      if (!dropdown) return;
+      event.preventDefault();
+      setWrappingDropdownOpen(dropdown, false);
+      const toggle = dropdown.querySelector(".wrapping-dropdown-toggle");
+      if (toggle) toggle.focus();
+    });
+  };
+
+  const setWrappingDropdownOpen = (dropdown, open) => {
+    const options = dropdown.querySelector(".wrapping-dropdown-options");
+    const toggle = dropdown.querySelector(".wrapping-dropdown-toggle");
+    if (open) {
+      bindWrappingDropdownDismissal();
+      dropdown.setAttribute("data-open", "");
+      if (options) {
+        options.hidden = false;
+        // Bring the selected entry into view inside the scrollable panel.
+        const selected = options.querySelector(".wrapping-dropdown-option.selected");
+        if (selected && typeof selected.scrollIntoView === "function") {
+          try {
+            selected.scrollIntoView({ block: "nearest" });
+          } catch (error) {
+            /* Engines without layout support ignore positioning. */
+          }
+        }
+      }
+      if (toggle) toggle.setAttribute("aria-expanded", "true");
+    } else {
+      dropdown.removeAttribute("data-open");
+      if (options) options.hidden = true;
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+  };
+
+  const buildWrappingDropdown = ({ fieldName, placeholder, options, value, required }) => {
+    const currentValue = String(value || "");
+
+    const root = document.createElement("div");
+    root.className = "wrapping-dropdown";
+    root.dataset.fieldName = fieldName;
+    if (required) root.classList.add("wrapping-dropdown--required");
+    if (!currentValue) root.classList.add("is-placeholder");
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "wrapping-dropdown-toggle";
+    toggle.setAttribute("aria-haspopup", "listbox");
+    toggle.setAttribute("aria-expanded", "false");
+
+    const label = document.createElement("span");
+    label.className = "wrapping-dropdown-label";
+    label.textContent = currentValue || placeholder;
+
+    const chevronWrap = document.createElement("span");
+    chevronWrap.className = "wrapping-dropdown-chevron";
+    chevronWrap.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+    toggle.appendChild(label);
+    toggle.appendChild(chevronWrap);
+
+    const listEl = document.createElement("ul");
+    listEl.className = "wrapping-dropdown-options";
+    listEl.setAttribute("role", "listbox");
+    listEl.hidden = true;
+
+    let stateValue = currentValue;
+
+    options.forEach((optionText) => {
+      const item = document.createElement("li");
+      item.className = "wrapping-dropdown-option";
+      item.setAttribute("role", "option");
+      if (optionText === currentValue) {
+        item.classList.add("selected");
+        item.setAttribute("aria-selected", "true");
+      }
+
+      const optionButton = document.createElement("button");
+      optionButton.type = "button";
+      optionButton.className = "wrapping-dropdown-option-btn";
+      optionButton.textContent = optionText;
+
+      optionButton.addEventListener("click", () => {
+        stateValue = optionText;
+        label.textContent = optionText;
+        root.classList.remove("is-placeholder", "wrapping-dropdown--invalid");
+        listEl.querySelectorAll(".wrapping-dropdown-option").forEach((other) => {
+          other.classList.toggle("selected", other === item);
+          if (other === item) other.setAttribute("aria-selected", "true");
+          else other.removeAttribute("aria-selected");
+        });
+        setWrappingDropdownOpen(root, false);
+        toggle.focus();
+      });
+
+      item.appendChild(optionButton);
+      listEl.appendChild(item);
+    });
+
+    toggle.addEventListener("click", () => {
+      setWrappingDropdownOpen(root, !root.hasAttribute("data-open"));
+    });
+
+    // Basic keyboard support: Up/Down opens the list and walks its entries;
+    // Enter/Space activate them because the entries are real buttons.
+    root.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      event.preventDefault();
+      if (!root.hasAttribute("data-open")) setWrappingDropdownOpen(root, true);
+      const optionButtons = Array.from(listEl.querySelectorAll(".wrapping-dropdown-option-btn"));
+      if (!optionButtons.length) return;
+      const currentIndex = optionButtons.indexOf(document.activeElement);
+      let nextIndex;
+      if (event.key === "ArrowDown") {
+        nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % optionButtons.length;
+      } else {
+        nextIndex = currentIndex <= 0 ? optionButtons.length - 1 : currentIndex - 1;
+      }
+      optionButtons[nextIndex].focus();
+    });
+
+    root.appendChild(toggle);
+    root.appendChild(listEl);
+
+    // Native-select-compatible surface consumed by saveEditingTicket().
+    return {
+      root,
+      get value() {
+        return stateValue;
+      },
+      checkValidity() {
+        return !required || String(stateValue || "").trim() !== "";
+      },
+      reportValidity() {
+        if (!this.checkValidity()) {
+          root.classList.add("wrapping-dropdown--invalid");
+          toggle.focus();
+          return false;
+        }
+        root.classList.remove("wrapping-dropdown--invalid");
+        return true;
+      },
+    };
+  };
+
   // Visual marker for owners whose value is "Unassigned" (e.g. set when their
   // team member was removed from the roster). Purely cosmetic: it only changes
   // how the owner text looks in the Ticket tracker and shared To-Do list -
@@ -861,6 +1033,28 @@ document.addEventListener("DOMContentLoaded", () => {
     dashboardStatusCanvas.appendChild(renderStatusChart(allTickets));
   };
 
+  // ----- Edit-mode text box sizing --------------------------------------
+  // While a ticket is being edited, its title and comments render as
+  // multi-line text boxes that grow to fit their full content so every
+  // word stays visible instead of scrolling out of sight.
+  const autosizeEditorBox = (box) => {
+    if (!box) return;
+    box.style.height = "auto";
+    // An element that is not yet in the document reports a scrollHeight
+    // of 0. Skip such measurements: renderTickets() runs a real pass once
+    // the table is attached to the document, and the CSS min-heights keep
+    // empty boxes usable until then.
+    if (box.scrollHeight > 0) {
+      box.style.height = `${box.scrollHeight}px`;
+    }
+  };
+
+  // Re-fits a box whenever its text changes while typing/pasting.
+  const bindEditorAutosize = (box) => {
+    box.addEventListener("input", () => autosizeEditorBox(box));
+    return box;
+  };
+
   const renderTickets = (tickets) => {
     clearTickets();
 
@@ -1083,32 +1277,43 @@ document.addEventListener("DOMContentLoaded", () => {
         row.appendChild(idCell);
 
         const titleCell = document.createElement("td");
-        const titleInput = document.createElement("input");
+        // A multi-line text box instead of a single-line <input> so long
+        // titles wrap onto extra lines instead of scrolling out of sight.
+        // It keeps name/required/value and auto-grows (bindEditorAutosize),
+        // and saving is unaffected because a textarea exposes the same
+        // .value and validity methods that saveEditingTicket relies on.
+        const titleInput = bindEditorAutosize(document.createElement("textarea"));
         titleInput.name = "title";
         titleInput.required = true;
+        titleInput.className = "ticket-title-editor";
+        titleInput.rows = 1;
         titleInput.value = ticket.title || "";
         titleCell.appendChild(titleInput);
         row.appendChild(titleCell);
 
         const ownerCell = document.createElement("td");
-        const ownerInput = buildOwnerSelect(ticket.owner || "");
-        ownerCell.appendChild(ownerInput);
+      // Wrapping listbox instead of a native <select>: native dropdowns
+        // cannot wrap their text, so long owner names would be clipped.
+        const ownerInput = buildWrappingDropdown({
+          fieldName: "owner",
+          placeholder: "Select owner",
+          options: getTeamMembers(),
+          value: ticket.owner || "",
+          required: true,
+        });
+        ownerCell.appendChild(ownerInput.root);
         row.appendChild(ownerCell);
 
         const statusCell = document.createElement("td");
-        const statusSelect = document.createElement("select");
-        statusSelect.name = "status";
-        statusSelect.required = true;
-        ["", "Open", "In Progress", "Resolved"].forEach((statusOption) => {
-          const option = document.createElement("option");
-          option.value = statusOption;
-          option.textContent = statusOption || "Select status";
-          if (ticket.status === statusOption) {
-            option.selected = true;
-          }
-          statusSelect.appendChild(option);
+        // Same wrap-capable dropdown as Owner, so status labels never clip.
+        const statusSelect = buildWrappingDropdown({
+          fieldName: "status",
+          placeholder: "Select status",
+          options: ["Open", "In Progress", "Resolved"],
+          value: ticket.status || "",
+          required: true,
         });
-        statusCell.appendChild(statusSelect);
+        statusCell.appendChild(statusSelect.root);
         row.appendChild(statusCell);
 
         const commentsCell = document.createElement("td");
@@ -1118,7 +1323,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // empty "new comment" box, so editing cannot add new comments.
         const commentInputs = (Array.isArray(ticket.comments) ? ticket.comments : []).map(
           (comment) => {
-            const commentInput = document.createElement("textarea");
+            // Auto-growing text box so the whole comment stays visible.
+            const commentInput = bindEditorAutosize(document.createElement("textarea"));
             commentInput.name = "comments";
             commentInput.className = "ticket-comment-editor";
             commentInput.rows = 2;
@@ -1235,6 +1441,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     table.appendChild(tbody);
     ticketsSection.appendChild(table);
+
+    // Fit every edit-mode text box to its content now that the table is in
+    // the document (detached elements measure as zero, so this cannot run
+    // earlier). Only rows being edited contain <textarea> elements, so this
+    // picks up exactly the open editor's title and comment boxes.
+    if (editingTicketId !== null) {
+      table.querySelectorAll("textarea").forEach(autosizeEditorBox);
+    }
   };
 
   if (syncJsonBtn) {

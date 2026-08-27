@@ -82,7 +82,7 @@
     {
       "id": "0ac92ec7-3058-419c-8eb5-707fa8464d75",
       "task": "testing 1",
-      "owner": "Jamie Rivera",
+      "owner": "Taylor Brooks",
       "dueDate": "2026-08-14T00:00:00.000Z",
       "completed": false,
       "createdAt": "2026-08-13T01:23:36.051Z"
@@ -187,12 +187,6 @@
       "name": "Barry Allen",
       "role": "Member",
       "email": "barry.allen@example.com",
-      "admin": false
-    },
-    {
-      "name": "Jordan Kim",
-      "role": "Member",
-      "email": "jordan.kim@example.com",
       "admin": false
     }
   ]

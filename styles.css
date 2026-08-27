@@ -161,14 +161,18 @@ section {
   width: 17%;
 }
 
+/* Owner column: widened and made equal to Status below. The space comes
+   out of the Actions column only, so ID/Title/Comments/Date keep their
+   previous widths and the columns still total 100%. */
 .ticket-table th:nth-child(3),
 .ticket-table td:nth-child(3) {
-  width: 11%;
+  width: 12%;
 }
 
+/* Status column: widened to match Owner exactly. */
 .ticket-table th:nth-child(4),
 .ticket-table td:nth-child(4) {
-  width: 10%;
+  width: 12%;
 }
 
 .ticket-table th:nth-child(5),
@@ -181,9 +185,12 @@ section {
   width: 11%;
 }
 
+/* Actions column: narrowed to fund the Owner/Status widening. Icon and
+   Save/Cancel buttons already stack vertically inside this column, so
+   their layout behaviour is unchanged. */
 .ticket-table th:nth-child(7),
 .ticket-table td:nth-child(7) {
-  width: 10%;
+  width: 7%;
 }
 
 .ticket-comments {
@@ -202,8 +209,116 @@ section {
   gap: 0.65rem;
 }
 
+/* During ticket editing the title uses a wrapping text box instead of a
+   single-line input, so long titles stay fully visible. It and every
+   comment box below are also auto-sized to their content by
+   autosizeEditorBox() in app.js; these min-heights are just comfortable
+   floors for empty or very short values. */
+.ticket-table .ticket-title-editor {
+  min-height: 4.5rem;
+}
+
 .ticket-comment-editors .ticket-comment-editor {
-  min-height: 3rem;
+  min-height: 4.5rem;
+}
+
+/* --- Wrap-capable dropdowns for the ticket edit row -----------------------
+   Native <select> popups cannot wrap text, so Owner/Status editors use the
+   custom listbox built by buildWrappingDropdown() in app.js. Labels wrap
+   onto multiple lines and the panel scrolls, matching the multiline title
+   and comment editors. */
+.wrapping-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.wrapping-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.wrapping-dropdown[data-open] .wrapping-dropdown-toggle,
+.wrapping-dropdown-toggle:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.wrapping-dropdown--required.is-placeholder .wrapping-dropdown-label {
+  color: var(--muted);
+}
+
+.wrapping-dropdown--invalid .wrapping-dropdown-toggle {
+  border-color: #d64545;
+  background: #fdf2f2;
+}
+
+.wrapping-dropdown-label {
+  flex: 1;
+  /* Words wrap as whole units at spaces only; letters of a word stay
+     together on one line while editing. */
+  white-space: normal;
+}
+
+.wrapping-dropdown-chevron {
+  display: inline-flex;
+  color: var(--muted);
+}
+
+.wrapping-dropdown-options {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.wrapping-dropdown-option-btn {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  /* Wrap only at word boundaries so option entries keep every word
+     intact on its own line instead of splitting mid-word. */
+  white-space: normal;
+}
+
+.wrapping-dropdown-option-btn:hover,
+.wrapping-dropdown-option-btn:focus-visible {
+  background: var(--tint);
+  outline: none;
+}
+
+.wrapping-dropdown-option.selected .wrapping-dropdown-option-btn {
+  background: var(--accent-light);
+  font-weight: 600;
 }
 
 .new-ticket-btn {
