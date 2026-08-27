@@ -2637,6 +2637,93 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
+    // Inline password prompt shown when the admin card is selected. Hides the
+    // member list and swaps the prompt text for a small form. The correct
+    // password (abc123) completes the sign-in; a wrong/empty password shows an
+    // inline error and keeps the popup open for another try. "Cancel" returns
+    // to the member list so a user can pick a non-admin if they change their mind.
+    const adminPassword = "abc123";
+
+    const showAdminPasswordPrompt = (member) => {
+      const originalPrompt = prompt.textContent;
+      options.style.display = "none";
+
+      prompt.textContent = `Enter the admin password to sign in as ${member.name}.`;
+
+      const form = document.createElement("form");
+      form.className = "login-modal-admin-form";
+      form.noValidate = true;
+
+      const label = document.createElement("label");
+      label.className = "login-modal-admin-label";
+      label.textContent = "Password";
+      label.htmlFor = "login-modal-password";
+
+      const input = document.createElement("input");
+      input.id = "login-modal-password";
+      input.type = "password";
+      input.name = "password";
+      input.autocomplete = "current-password";
+      input.placeholder = "Enter password";
+      label.appendChild(input);
+
+      const error = document.createElement("p");
+      error.className = "login-modal-admin-error";
+      error.hidden = true;
+
+      const actions = document.createElement("div");
+      actions.className = "login-modal-admin-actions";
+
+      const cancelButton = document.createElement("button");
+      cancelButton.type = "button";
+      cancelButton.className = "login-modal-cancel-btn";
+      cancelButton.textContent = "Cancel";
+      cancelButton.addEventListener("click", () => {
+        form.remove();
+        prompt.textContent = originalPrompt;
+        options.style.display = "";
+        if (input.value) input.value = "";
+      });
+
+      const submitButton = document.createElement("button");
+      submitButton.type = "submit";
+      submitButton.className = "login-modal-submit-btn";
+      submitButton.textContent = "Sign in";
+
+      actions.append(cancelButton, submitButton);
+      form.append(label, error, actions);
+
+      const submitHandler = (event) => {
+        event.preventDefault();
+        if (input.value === adminPassword) {
+          signIn(member);
+        } else {
+          error.textContent = "Incorrect password. Please try again.";
+          error.hidden = false;
+          input.focus();
+          if (input.value) input.select();
+        }
+      };
+      form.addEventListener("submit", submitHandler);
+
+      card.appendChild(form);
+      input.focus();
+    };
+
+    // Completes the sign-in the same way a non-admin card always did: persist the
+    // chosen identity, show the signed-in badge, close the popup, then refresh the
+    // Team section so the admin-only add/remove controls appear (or stay hidden).
+    const signIn = (member) => {
+      try {
+        sessionStorage.setItem(userStorageKey, JSON.stringify(member));
+      } catch (e) {
+        // Non-fatal: popup still closes and the page remains fully usable.
+      }
+      renderUserBadge(member);
+      close();
+      renderTeam();
+    };
+
     members.forEach((member) => {
       const button = document.createElement("button");
       button.type = "button";
@@ -2653,16 +2740,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       button.append(nameSpan, roleSpan);
       button.addEventListener("click", () => {
-        try {
-          sessionStorage.setItem(userStorageKey, JSON.stringify(member));
-        } catch (e) {
-          // Non-fatal: popup still closes and the page remains fully usable.
+        // Admin selection requires a password before signing in; members sign in
+        // straight away without one.
+        if (member.admin) {
+          showAdminPasswordPrompt(member);
+        } else {
+          signIn(member);
         }
-        renderUserBadge(member);
-        close();
-        // Now that we know who signed in, re-render the Team section so the
-        // admin-only add/remove controls appear (or stay hidden) as appropriate.
-        renderTeam();
       });
       options.appendChild(button);
     });

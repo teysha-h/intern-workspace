@@ -1775,3 +1775,86 @@ summary {
     padding: 0.3rem 0.6rem;
   }
 }
+
+/* ===== Admin password prompt (login modal) =====
+   Inline form shown inside the existing login card when the admin is chosen.
+   It reuses the login modal's styling and the app's CSS variables so it looks
+   native to the current card design. It does not affect the member list, the
+   badge, or any other styling. */
+.login-modal-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.login-modal-admin-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.login-modal-admin-label input {
+  padding: 0.6rem 0.75rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-modal-admin-label input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.login-modal-admin-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.login-modal-admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.login-modal-admin-actions button {
+  padding: 0.5rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.login-modal-cancel-btn {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.login-modal-cancel-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.login-modal-submit-btn {
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.login-modal-submit-btn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
