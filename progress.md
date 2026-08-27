@@ -148,3 +148,6 @@ What to include:
 - Changed 'add comment' button in ticket-tracker to an icon
 - Changed 'mark done' button in todo to an icon
 - Charts created to display ticket and to-do status on dashboard 
+- Added a 'team' section to dispay team members
+- Created a login page so users have to select which team member they are
+- Changed the 'owner' field so it now consists of a drop down menu of team members

@@ -73,6 +73,352 @@ document.addEventListener("DOMContentLoaded", () => {
     return select;
   };
 
+  // ===== Team / Admin control =====
+  // The Team roster is data-driven (single source of truth held here) instead of
+  // duplicated in index.html. It is seeded from the existing hard-coded cards in
+  // #team-list so the page behaves exactly as before, then persisted to
+  // localStorage and included in the "Save JSON" sync. Because the Ticket/To-Do
+  // owner dropdowns (getTeamMembers) and the login popup already read this same
+  // DOM live, re-rendering the roster automatically propagates adds/removes
+  // across the whole page.
+  const teamSection = document.getElementById("team");
+  let teamMembers = [];
+
+  const teamStorageKey = "intern-workspace-team";
+  let editingTeamMemberIndex = null;
+
+  const saveTeamToLocalStorage = () => {
+    try {
+      localStorage.setItem(teamStorageKey, JSON.stringify(teamMembers));
+    } catch (error) {
+      console.warn("Unable to save team locally", error);
+    }
+  };
+
+  const loadTeamFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(teamStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (error) {
+      console.warn("Unable to load team from local storage", error);
+    }
+    return null;
+  };
+
+  // Who is signed in right now (parsed sessionStorage current-user JSON).
+  const getCurrentUser = () => {
+    try {
+      const raw = sessionStorage.getItem("intern-workspace-current-user");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && parsed.name ? parsed : null;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  // Only admins can add/remove members; regular members see the roster read-only.
+  const isAdminView = () => {
+    const user = getCurrentUser();
+    return !!(user && user.admin);
+  };
+
+  // Refresh the Ticket and To-Do sections so their owner dropdowns pick up the
+  // live roster. These render functions already read #team-list via
+  // getTeamMembers(), so no extra re-wiring is needed here.
+  const rerenderOwnerConsumers = () => {
+    renderTickets(allTickets);
+    if (typeof renderTodos === "function") renderTodos(window._sharedTodos || []);
+  };
+
+  const renderTeam = () => {
+    if (!teamSection) return;
+    const adminView = isAdminView();
+
+    // Preserve only the section heading and rebuild a brand-new list container
+    // each time. Reusing the existing node after clearing the section would
+    // re-attach its old children (duplicating every card), so a fresh element
+    // is created here.
+    const preserveHeading = teamSection.querySelector("h2");
+    teamSection.innerHTML = "";
+    if (preserveHeading) teamSection.appendChild(preserveHeading);
+
+    const list = document.createElement("div");
+    list.className = "contacts-list";
+    list.id = "team-list";
+    teamSection.appendChild(list);
+
+    // Admin-only "Add member" form sits just above the roster.
+    if (adminView) {
+      const addForm = buildTeamAddForm();
+      if (addForm) {
+        const addWrap = document.createElement("div");
+        addWrap.className = "team-add-wrap";
+        addWrap.appendChild(addForm);
+        teamSection.insertBefore(addWrap, list);
+      }
+    }
+
+    if (teamMembers.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No team members yet.";
+      list.appendChild(empty);
+      return;
+    }
+
+    teamMembers.forEach((member, index) => {
+      const item = document.createElement("div");
+      item.className = "contact-item team-member";
+      if (member.admin) item.classList.add("admin");
+
+      // Edit mode: swap the read-only details for an inline form.
+      if (adminView && editingTeamMemberIndex === index) {
+        item.classList.add("contact-item--editing");
+        const form = buildTeamEditForm(member, index);
+        if (form) item.appendChild(form);
+        list.appendChild(item);
+        return;
+      }
+
+      const header = document.createElement("div");
+      header.className = "contact-header";
+
+      const name = document.createElement("h3");
+      name.textContent = member.name || "";
+
+      // Admin can manage every non-admin member (the admin card is protected).
+      if (adminView && !member.admin) {
+        const actions = document.createElement("div");
+        actions.className = "contact-item-actions team-member-actions";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "new-ticket-btn edit-btn";
+        editButton.innerHTML = editIconSvg;
+        editButton.setAttribute("aria-label", "Edit");
+        editButton.setAttribute("data-tooltip", "Edit");
+        editButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          editingTeamMemberIndex = index;
+          renderTeam();
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "new-ticket-btn delete-btn";
+        deleteButton.innerHTML = deleteIconSvg;
+        deleteButton.setAttribute("aria-label", "Remove from team");
+        deleteButton.setAttribute("data-tooltip", "Remove from team");
+        deleteButton.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (!confirm(`Remove ${member.name} from the team?`)) return;
+          teamMembers.splice(index, 1);
+          editingTeamMemberIndex = null;
+          saveTeamToLocalStorage();
+          markUnsynced();
+          rerenderOwnerConsumers();
+          renderTeam();
+        });
+
+        actions.append(editButton, deleteButton);
+        header.append(name, actions);
+      } else {
+        header.appendChild(name);
+      }
+
+      item.appendChild(header);
+
+      const role = document.createElement("p");
+      role.className = "contact-role";
+      role.textContent = member.role || (member.admin ? "Admin" : "Member");
+      item.appendChild(role);
+
+      const details = document.createElement("div");
+      details.className = "contact-details";
+      if (member.email) {
+        const emailLink = document.createElement("a");
+        emailLink.href = `mailto:${member.email}`;
+        emailLink.textContent = member.email;
+        details.appendChild(emailLink);
+      }
+      item.appendChild(details);
+
+      list.appendChild(item);
+    });
+  };
+
+  const buildTeamAddForm = () => {
+    const form = document.createElement("form");
+    form.className = "contact-edit-form team-add-form";
+
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Name";
+    const nameInput = document.createElement("input");
+    nameInput.name = "name";
+    nameInput.required = true;
+    nameInput.placeholder = "New member name";
+    nameLabel.appendChild(nameInput);
+
+    const roleLabel = document.createElement("label");
+    roleLabel.textContent = "Role";
+    const roleInput = document.createElement("input");
+    roleInput.name = "role";
+    roleInput.value = "Member";
+    roleLabel.appendChild(roleInput);
+
+    const emailLabel = document.createElement("label");
+    emailLabel.textContent = "Email";
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.type = "email";
+    emailInput.placeholder = "name@example.com";
+    emailLabel.appendChild(emailInput);
+
+    const actions = document.createElement("div");
+    actions.className = "contact-edit-actions";
+
+    const addButton = document.createElement("button");
+    addButton.type = "submit";
+    addButton.className = "new-ticket-btn";
+    addButton.textContent = "Add member";
+    addButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const name = String(nameInput.value || "").trim();
+      if (!name) return;
+      if (teamMembers.some((m) => m.name.toLowerCase() === name.toLowerCase())) {
+        nameInput.setCustomValidity("A team member with this name already exists.");
+        form.reportValidity();
+        nameInput.setCustomValidity("");
+        return;
+      }
+      teamMembers.push({
+        name,
+        role: String(roleInput.value || "Member").trim(),
+        email: String(emailInput.value || "").trim(),
+        admin: false,
+      });
+      saveTeamToLocalStorage();
+      markUnsynced();
+      form.reset();
+      roleInput.value = "Member";
+      rerenderOwnerConsumers();
+      renderTeam();
+    });
+
+    actions.appendChild(addButton);
+    form.append(nameLabel, roleLabel, emailLabel, actions);
+    return form;
+  };
+
+  const buildTeamEditForm = (member, index) => {
+    const form = document.createElement("form");
+    form.className = "contact-edit-form";
+
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Name";
+    const nameInput = document.createElement("input");
+    nameInput.name = "name";
+    nameInput.required = true;
+    nameInput.value = member.name || "";
+    nameLabel.appendChild(nameInput);
+
+    const roleLabel = document.createElement("label");
+    roleLabel.textContent = "Role";
+    const roleInput = document.createElement("input");
+    roleInput.name = "role";
+    roleInput.value = member.role || "Member";
+    roleLabel.appendChild(roleInput);
+
+    const emailLabel = document.createElement("label");
+    emailLabel.textContent = "Email";
+    const emailInput = document.createElement("input");
+    emailInput.name = "email";
+    emailInput.type = "email";
+    emailInput.value = member.email || "";
+    emailLabel.appendChild(emailInput);
+
+    const actions = document.createElement("div");
+    actions.className = "contact-edit-actions";
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.className = "new-ticket-btn";
+    saveButton.textContent = "Save";
+    saveButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const name = String(nameInput.value || "").trim();
+      if (!name) return;
+      member.name = name;
+      member.role = String(roleInput.value || "Member").trim();
+      member.email = String(emailInput.value || "").trim();
+      editingTeamMemberIndex = null;
+      saveTeamToLocalStorage();
+      markUnsynced();
+      rerenderOwnerConsumers();
+      renderTeam();
+    });
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className = "new-ticket-btn";
+    cancelButton.textContent = "Cancel";
+    cancelButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      editingTeamMemberIndex = null;
+      renderTeam();
+    });
+
+    actions.append(saveButton, cancelButton);
+    form.append(nameLabel, roleLabel, emailLabel, actions);
+    return form;
+  };
+
+  // Initialize Team: prefer localStorage, then data.json (if it has a team key),
+  // else seed from the existing hard-coded cards in #team-list so nothing in
+  // index.html has to change. Rendering here (before tickets/todos first render)
+  // ensures their owner dropdowns see the current roster from the start.
+  (function initTeam() {
+    if (!teamSection) return;
+
+    const seedFromCards = () => {
+      const cards = document.querySelectorAll("#team-list .contact-item.team-member");
+      return Array.from(cards).map((card) => ({
+        name: (card.querySelector("h3") ? card.querySelector("h3").textContent.trim() : "") || "Unknown",
+        role: (card.querySelector(".contact-role") ? card.querySelector(".contact-role").textContent.trim() : "") || "Member",
+        email: (card.querySelector(".contact-details a") ? card.querySelector(".contact-details a").textContent.trim() : "") || "",
+        admin: card.classList.contains("admin"),
+      }));
+    };
+
+    const local = loadTeamFromLocalStorage();
+    if (local !== null) {
+      teamMembers = local;
+      renderTeam();
+      return;
+    }
+    fetch("data.json")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.team)) {
+          teamMembers = data.team;
+        } else {
+          teamMembers = seedFromCards();
+        }
+        saveTeamToLocalStorage();
+        renderTeam();
+      })
+      .catch(() => {
+        teamMembers = seedFromCards();
+        renderTeam();
+      });
+  })();
+
+
   const normalizeComments = (comments, fallbackTimestamp) => {
 
     if (!comments) return [];
@@ -255,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const writable = await writableFileHandle.createWritable();
-      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments, faq: faqItems, contacts: contactsItems };
+      const payload = { tickets: allTickets, todos: window._sharedTodos || [], onboarding: onboardingDocuments, faq: faqItems, contacts: contactsItems, team: teamMembers };
       await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
       saveToLocalStorage(allTickets);
@@ -2140,7 +2486,8 @@ document.addEventListener("DOMContentLoaded", () => {
     deepEqual(window._sharedTodos || [], onDisk.todos || []) &&
     deepEqual(onboardingDocuments || [], onDisk.onboarding || []) &&
     deepEqual(faqItems || [], onDisk.faq || []) &&
-    deepEqual(contactsItems || [], onDisk.contacts || []);
+    deepEqual(contactsItems || [], onDisk.contacts || []) &&
+    (!Array.isArray(onDisk.team) || deepEqual(teamMembers || [], onDisk.team));
 
   const refreshSyncState = async () => {
     try {
@@ -2306,6 +2653,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         renderUserBadge(member);
         close();
+        // Now that we know who signed in, re-render the Team section so the
+        // admin-only add/remove controls appear (or stay hidden) as appropriate.
+        renderTeam();
       });
       options.appendChild(button);
     });

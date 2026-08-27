@@ -1566,6 +1566,40 @@ summary {
   justify-content: start;
 }
 
+/* Team: admin add/remove controls. The add-member form and the member action
+   buttons reuse the Contacts icon/edit styles; only a couple of tweaks are
+   needed so they sit nicely above/beside the roster tiles. */
+.team-add-wrap {
+  margin-bottom: 1rem;
+}
+
+/* Lay the add-member fields (Name / Role / Email) out horizontally side by
+   side, with the button at the end, while the whole box spans the section
+   width. Labels stay above their own input via the base .contact-edit-form
+   rules; only the column layout (and bottom alignment) changes here. */
+.team-add-form {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.5fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  width: 100%;
+}
+
+.team-member-actions {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.team-member-actions .new-ticket-btn.delete-btn {
+  background: transparent;
+  border: 1px solid #f3c6c6;
+}
+
+.team-member-actions .new-ticket-btn.delete-btn:hover {
+  background: #fdecec;
+  border-color: #e5a3a3;
+}
+
 /* ===== Login "who are you?" popup =====
    Full-screen modal overlay shown once per browser session. It sits on top of
    the page (does not affect layout or the hash router) and reuses the app's
