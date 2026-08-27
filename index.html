@@ -39,6 +39,31 @@
         <div class="home-status-chart" id="home-status-chart">
           <h3>Status Tracker Summary</h3>
           <div class="home-status-chart-canvas"></div>
+
+          <!--
+            Shared to-do completion gauge, shown in the Home card next to the
+            existing status chart. A half-circle "speedometer" style gauge that
+            reflects the percentage of completed shared to-do tasks. The arc and
+            needle are kept in sync by renderTodoGauge() in app.js.
+          -->
+          <div class="todo-gauge" id="todo-gauge">
+            <h3>Tasks Completed</h3>
+            <div class="todo-gauge-canvas">
+              <div class="todo-gauge-donut">
+                <svg viewBox="0 0 200 120" role="img" aria-label="Percentage of completed tasks">
+                  <!-- Track: full 180 degree half-circle -->
+                  <path class="todo-gauge-track" d="M 20 100 A 80 80 0 0 1 180 100" fill="none"></path>
+                  <!-- Progress: colour filled up to the current percentage (arc radius = 80) -->
+                  <path class="todo-gauge-progress" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" data-arc-radius="80"></path>
+                </svg>
+              </div>
+              <div class="todo-gauge-readout">
+                <span class="todo-gauge-center-value">0%</span>
+                <span class="todo-gauge-center-label">completed</span>
+                <span class="todo-gauge-caption">0 completed of 0 tasks</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -50,45 +75,6 @@
       <section id="todo">
         <h2>Shared To-Do</h2>
         <p>Shared tasks will appear here.</p>
-
-        <!--
-          Shared to-do completion gauge (structure only).
-
-          This block is the markup the gauge is drawn into. The `hidden`
-          attribute and the matching `.todo-gauge[hidden]` rule in styles.css
-          keep it off the screen for now; it is kept in sync by
-          renderTodoGauge() in app.js, so when it is eventually shown it will
-          already reflect the current task list and completion status.
-        -->
-        <div class="todo-gauge" id="todo-gauge" hidden>
-          <h3>Gauge</h3>
-          <div class="todo-gauge-canvas">
-            <div class="todo-gauge-donut">
-              <svg viewBox="0 0 120 120" role="img" aria-label="Percentage of completed tasks">
-                <circle
-                  class="todo-gauge-track"
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                ></circle>
-                <circle
-                  class="todo-gauge-progress"
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  transform="rotate(-90 60 60)"
-                ></circle>
-              </svg>
-              <div class="todo-gauge-center">
-                <span class="todo-gauge-center-value">0%</span>
-                <span class="todo-gauge-center-label">completed</span>
-              </div>
-            </div>
-            <p class="todo-gauge-caption">0 completed of 0 tasks</p>
-          </div>
-        </div>
       </section>
 
       <section id="links">

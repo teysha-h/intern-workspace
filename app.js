@@ -905,10 +905,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderTodos = (todos) => {
     if (!todoSection) return;
     const preserve = todoSection.querySelector("h2");
-    const preserveGauge = todoSection.querySelector("#todo-gauge");
     todoSection.innerHTML = "";
     if (preserve) todoSection.appendChild(preserve);
-    if (preserveGauge) todoSection.appendChild(preserveGauge);
 
     const container = document.createElement("div");
     container.className = "todo-container";
@@ -1132,21 +1130,20 @@ document.addEventListener("DOMContentLoaded", () => {
     container.appendChild(form);
     todoSection.appendChild(container);
 
-    // Keep the (hidden) shared to-do completion gauge in sync with the
-    // current task list. Every add/edit/toggle/delete flows through
-    // renderTodos, so this single call keeps the gauge current.
+    // Keep the Home shared to-do completion gauge in sync with the current
+    // task list. Every add/edit/toggle/delete flows through renderTodos, so
+    // this single call keeps the gauge current.
     renderTodoGauge(todos);
   };
 
-  // Builds/updates the hidden shared to-do completion gauge.
+  // Builds/updates the shared to-do completion gauge shown in the Home card.
   //
   // This only reflects the current tasks: it reads `todos`, computes the
-  // percentage of completed tasks and pushes those values into the (hidden)
-  // #todo-gauge structure from index.html. It never writes to the data, so
-  // it cannot corrupt the task list. It is deliberately NOT shown on screen
-  // yet; it is kept in sync so relaxing it later is instant.
+  // percentage of completed tasks and pushes those values into the #todo-gauge
+  // structure from index.html. It never writes to the data, so it cannot
+  // corrupt the task list.
   const renderTodoGauge = (todos) => {
-    const gauge = todoSection ? todoSection.querySelector("#todo-gauge") : null;
+    const gauge = document.getElementById("todo-gauge");
     if (!gauge) return;
 
     const list = Array.isArray(todos) ? todos : [];
@@ -1156,16 +1153,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const valueEl = gauge.querySelector(".todo-gauge-center-value");
     const captionEl = gauge.querySelector(".todo-gauge-caption");
-    const progressCircle = gauge.querySelector(".todo-gauge-progress");
+    const progressPath = gauge.querySelector(".todo-gauge-progress");
 
     if (valueEl) valueEl.textContent = `${percent}%`;
     if (captionEl) captionEl.textContent = `${completed} completed of ${total} tasks`;
 
-    if (progressCircle) {
-      const r = Number(progressCircle.getAttribute("r")) || 52;
-      const circumference = 2 * Math.PI * r;
-      const length = total > 0 ? (percent / 100) * circumference : 0;
-      progressCircle.setAttribute("stroke-dasharray", `${length} ${circumference}`);
+    // Fill the half-circle arc up to the current percentage. The arc's length
+    // is half a circle (PI * radius), so the dash length scales linearly with
+    // the percentage from the left-hand end of the gauge, colouring in the
+    // gauge in proportion to how much of the shared to-do list is complete.
+    // We set it via inline style so it overrides the stylesheet's default
+    // stroke-dasharray (setting it as an attribute would be beaten by CSS).
+    if (progressPath) {
+      const r = Number(progressPath.getAttribute("data-arc-radius")) || 80;
+      const halfCirc = Math.PI * r;
+      const length = total > 0 ? (percent / 100) * halfCirc : 0;
+      progressPath.style.strokeDasharray = `${length} ${halfCirc}`;
     }
   };
 

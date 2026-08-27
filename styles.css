@@ -1409,21 +1409,47 @@ summary {
   justify-content: center;
 }
 
-/* ===== Shared to-do completion gauge (stored, hidden until shown) =====
-   These rules style the completion gauge inside the Shared To-Do section
-   card. The gauge is intentionally NOT displayed right now: the markup in
-   index.html carries the `hidden` attribute and the rule below forces it to
-   stay out of the way. It is kept live by renderTodoGauge() in app.js, so it
-   will already be correct if it ever needs to be shown. Remove the
-   `hidden` attribute (index.html) and/or delete the `[hidden]` rule below
-   to reveal it. */
+/* Home card: lay the status donut and the shared to-do gauge side by side. */
+#home-status-chart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 3rem;
+}
+
+#home-status-chart > h3 {
+  flex: 1 1 100%;
+}
+
+#home-status-chart .home-status-chart-canvas {
+  flex: 0 1 auto;
+  justify-content: flex-start;
+}
+
+#home-status-chart .todo-gauge {
+  flex: 0 1 280px;
+  margin: 0;
+  padding: 0;
+  border-top: none;
+}
+
+#home-status-chart .todo-gauge h3 {
+  margin-bottom: 0.5rem;
+}
+
+/* ===== Shared to-do completion gauge (shown in the Home card) =====
+   These rules style the half-circle "speedometer" gauge that is displayed in
+   the Home section card next to the existing status chart. It is kept live by
+   renderTodoGauge() in app.js and reflects the percentage of completed shared
+   to-do tasks. The `[hidden]` rule below is a safety net: it keeps the gauge
+   off the page whenever the markup carries the `hidden` attribute. */
 .todo-gauge {
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
 
-/* Keep the gauge invisible while the `hidden` attribute / class is set. */
+/* Safety net: keep the gauge invisible if the `hidden` attribute is set. */
 .todo-gauge[hidden] {
   display: none;
 }
@@ -1436,46 +1462,46 @@ summary {
 .todo-gauge-canvas {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem 1.5rem;
   flex-wrap: wrap;
 }
 
 .todo-gauge-donut {
-  position: relative;
   flex: 0 0 auto;
-  width: 120px;
+  width: 200px;
   height: 120px;
 }
 
 .todo-gauge-donut svg {
   display: block;
+  width: 100%;
+  height: auto;
 }
 
 .todo-gauge-track {
   stroke: var(--border);
-  stroke-width: 14;
+  stroke-width: 16;
+  stroke-linecap: round;
+  fill: none;
 }
 
 .todo-gauge-progress {
   stroke: var(--accent);
-  stroke-width: 14;
+  stroke-width: 16;
   stroke-linecap: round;
-  stroke-dasharray: 0 326.73; /* 0% by default; updated in renderTodoGauge() */
+  fill: none;
+  stroke-dasharray: 0 251.33; /* 0% by default; updated in renderTodoGauge() */
 }
 
-.todo-gauge-center {
-  position: absolute;
-  inset: 0;
+.todo-gauge-readout {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  pointer-events: none;
+  align-items: flex-start;
+  gap: 0.15rem;
 }
 
 .todo-gauge-center-value {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 700;
   line-height: 1.1;
 }
@@ -1483,10 +1509,12 @@ summary {
 .todo-gauge-center-label {
   font-size: 0.72rem;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .todo-gauge-caption {
-  margin: 0;
+  margin: 0.2rem 0 0;
   color: var(--muted);
   font-size: 0.9rem;
 }
