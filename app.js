@@ -298,18 +298,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return copied.sort((a, b) => parseTicketId(a.id) - parseTicketId(b.id));
   };
 
-  // ===== Status donut chart (displayed in the Home section card) =====
+  // ===== Status donut chart (displayed in the Dashboard section card) =====
   // This builds a donut chart for the ticket tracker's status column and
-  // shows it in the Home section. It reflects the live ticket tracker
+  // shows it in the Dashboard section. It reflects the live ticket tracker
   // automatically: it is re-rendered inside renderTickets(), which is the
   // single refresh path every ticket change (create / edit / change status /
   // delete / add comment) runs through. Counts are actual numbers, not
   // percentages. The same builder is kept reusable if it is ever needed
   // anywhere else.
+  // Status colours follow the page's cream + blue scheme: a soft cream for
+  // Open, a mid blue for In Progress, and the deep corporate blue for Resolved.
   const STATUS_CHART_COLORS = {
-    Open: "#8a93a3",
-    "In Progress": "#f59e0b",
-    Resolved: "#22c55e",
+    Open: "#F3E9CE",
+    "In Progress": "#7FA8D9",
+    Resolved: "#1F4E79",
   };
 
   const renderStatusChart = (tickets) => {
@@ -414,14 +416,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return wrap;
   };
 
-  const homeStatusCanvas = document.querySelector("#home-status-chart .home-status-chart-canvas");
+  const dashboardStatusCanvas = document.querySelector("#dashboard-status-chart .dashboard-status-chart-canvas");
 
-  // Draw the donut into the Home section card with the latest ticket statuses.
+  // Draw the donut into the Dashboard section card with the latest ticket statuses.
   // Called from renderTickets() so it refreshes whenever the tracker changes.
-  const renderHomeStatusChart = () => {
-    if (!homeStatusCanvas) return;
-    homeStatusCanvas.innerHTML = "";
-    homeStatusCanvas.appendChild(renderStatusChart(allTickets));
+  const renderDashboardStatusChart = () => {
+    if (!dashboardStatusCanvas) return;
+    dashboardStatusCanvas.innerHTML = "";
+    dashboardStatusCanvas.appendChild(renderStatusChart(allTickets));
   };
 
   const renderTickets = (tickets) => {
@@ -449,8 +451,8 @@ document.addEventListener("DOMContentLoaded", () => {
     header.appendChild(newTicketButton);
     ticketsSection.appendChild(header);
 
-    // Keep the Home-section status chart in sync with the tracker.
-    renderHomeStatusChart();
+    // Keep the Dashboard-section status chart in sync with the tracker.
+    renderDashboardStatusChart();
 
     const sortForm = document.createElement("form");
     sortForm.className = "tickets-sort";
@@ -1130,13 +1132,13 @@ document.addEventListener("DOMContentLoaded", () => {
     container.appendChild(form);
     todoSection.appendChild(container);
 
-    // Keep the Home shared to-do completion gauge in sync with the current
+    // Keep the Dashboard shared to-do completion gauge in sync with the current
     // task list. Every add/edit/toggle/delete flows through renderTodos, so
     // this single call keeps the gauge current.
     renderTodoGauge(todos);
   };
 
-  // Builds/updates the shared to-do completion gauge shown in the Home card.
+  // Builds/updates the shared to-do completion gauge shown in the Dashboard card.
   //
   // This only reflects the current tasks: it reads `todos`, computes the
   // percentage of completed tasks and pushes those values into the #todo-gauge
@@ -2113,17 +2115,17 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshSyncState();
 
   // ===== Simple hash router: each section card behaves as its own page =====
-  // No hash => show the Home section. A hash such as #tickets shows only that
+  // No hash => show the Dashboard section. A hash such as #tickets shows only that
   // section card, so each card works like its own page without extra HTML files.
   const routeSections = Array.from(document.querySelectorAll("main > section"));
-  const homeSection = document.getElementById("home");
+  const dashboardSection = document.getElementById("dashboard");
 
   const applyRoute = () => {
     const hash = (window.location.hash || "").replace(/^#/, "");
     let active = hash ? document.getElementById(hash) : null;
 
     if (!active || !active.matches("main > section")) {
-      active = homeSection || routeSections[0] || null;
+      active = dashboardSection || routeSections[0] || null;
     }
 
     routeSections.forEach((section) => {
