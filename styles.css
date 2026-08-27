@@ -399,28 +399,23 @@ section {
   background: #e5e7eb;
 }
 
-/* Make action buttons share the full width of the actions column
-   without increasing row height: distribute horizontally and allow
-   each button to flex evenly. */
+/* Keep the action column as a normal table cell so it stretches to the full
+   height of the row (all columns in a row stay the same height). The icon
+   buttons sit side-by-side as inline-flex items, horizontally aligned and
+   vertically centered within the row. */
 .ticket-table td:last-child {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: stretch;
+  text-align: center;
+  vertical-align: middle;
   min-width: 0;
   padding: 0.25rem;
 }
 .ticket-table td:last-child .ticket-action-btn {
-  flex: 1 1 0;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0.75rem;
   font-weight: 400;
-}
-.ticket-table td:last-child .ticket-action-btn.cancel {
-  /* keep visual cancel styling but allow it to stretch like others */
-  flex: 1 1 0;
-  font-weight: 400;
+  vertical-align: middle;
 }
 
 /* Shared To-Do: add-task form matching the ticket form styling, with extra spacing */
