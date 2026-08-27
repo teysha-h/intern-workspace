@@ -50,6 +50,45 @@
       <section id="todo">
         <h2>Shared To-Do</h2>
         <p>Shared tasks will appear here.</p>
+
+        <!--
+          Shared to-do completion gauge (structure only).
+
+          This block is the markup the gauge is drawn into. The `hidden`
+          attribute and the matching `.todo-gauge[hidden]` rule in styles.css
+          keep it off the screen for now; it is kept in sync by
+          renderTodoGauge() in app.js, so when it is eventually shown it will
+          already reflect the current task list and completion status.
+        -->
+        <div class="todo-gauge" id="todo-gauge" hidden>
+          <h3>Gauge</h3>
+          <div class="todo-gauge-canvas">
+            <div class="todo-gauge-donut">
+              <svg viewBox="0 0 120 120" role="img" aria-label="Percentage of completed tasks">
+                <circle
+                  class="todo-gauge-track"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                ></circle>
+                <circle
+                  class="todo-gauge-progress"
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                  transform="rotate(-90 60 60)"
+                ></circle>
+              </svg>
+              <div class="todo-gauge-center">
+                <span class="todo-gauge-center-value">0%</span>
+                <span class="todo-gauge-center-label">completed</span>
+              </div>
+            </div>
+            <p class="todo-gauge-caption">0 completed of 0 tasks</p>
+          </div>
+        </div>
       </section>
 
       <section id="links">

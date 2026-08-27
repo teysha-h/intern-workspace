@@ -1408,3 +1408,85 @@ summary {
   display: flex;
   justify-content: center;
 }
+
+/* ===== Shared to-do completion gauge (stored, hidden until shown) =====
+   These rules style the completion gauge inside the Shared To-Do section
+   card. The gauge is intentionally NOT displayed right now: the markup in
+   index.html carries the `hidden` attribute and the rule below forces it to
+   stay out of the way. It is kept live by renderTodoGauge() in app.js, so it
+   will already be correct if it ever needs to be shown. Remove the
+   `hidden` attribute (index.html) and/or delete the `[hidden]` rule below
+   to reveal it. */
+.todo-gauge {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Keep the gauge invisible while the `hidden` attribute / class is set. */
+.todo-gauge[hidden] {
+  display: none;
+}
+
+.todo-gauge h3 {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.todo-gauge-canvas {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.todo-gauge-donut {
+  position: relative;
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+}
+
+.todo-gauge-donut svg {
+  display: block;
+}
+
+.todo-gauge-track {
+  stroke: var(--border);
+  stroke-width: 14;
+}
+
+.todo-gauge-progress {
+  stroke: var(--accent);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 0 326.73; /* 0% by default; updated in renderTodoGauge() */
+}
+
+.todo-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.todo-gauge-center-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.todo-gauge-center-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.todo-gauge-caption {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
