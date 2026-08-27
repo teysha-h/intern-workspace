@@ -1545,3 +1545,11 @@ summary {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+/* Team list: reuse the Contacts card look but keep the tiles narrower than the
+   full-width Contacts column. The list is capped to a fixed width and wraps
+   into multiple columns so each tile stays compact instead of stretching. */
+.team-list {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 240px));
+  justify-content: start;
+}

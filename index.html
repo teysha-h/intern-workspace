@@ -148,14 +148,58 @@
       <section id="team">
         <h2>Team</h2>
 
-        <!-- The admin (a single, highlighted person on the team) -->
-        <div class="team-admin" id="team-admin">
-          <p>Team admin will appear here.</p>
-        </div>
+        <!-- Team roster. Card layout mirrors the Contacts card stylistically:
+             each person shows their name with their role below it. The admin is
+             the first card and is clearly labelled as the Admin. Each member
+             has an example email; no phone numbers are shown. -->
+        <div class="contacts-list" id="team-list">
+          <div class="contact-item team-member admin">
+            <h3>Alex Morgan</h3>
+            <p class="contact-role">Admin</p>
+            <div class="contact-details">
+              <a href="mailto:alex.morgan@example.com">alex.morgan@example.com</a>
+            </div>
+          </div>
 
-        <!-- The list of team members -->
-        <div class="team-list" id="team-list">
-          <p>Team members will appear here.</p>
+          <div class="contact-item team-member">
+            <h3>Jamie Rivera</h3>
+            <p class="contact-role">Member</p>
+            <div class="contact-details">
+              <a href="mailto:jamie.rivera@example.com">jamie.rivera@example.com</a>
+            </div>
+          </div>
+
+          <div class="contact-item team-member">
+            <h3>Casey Nguyen</h3>
+            <p class="contact-role">Member</p>
+            <div class="contact-details">
+              <a href="mailto:casey.nguyen@example.com">casey.nguyen@example.com</a>
+            </div>
+          </div>
+
+          <div class="contact-item team-member">
+            <h3>Morgan Lee</h3>
+            <p class="contact-role">Member</p>
+            <div class="contact-details">
+              <a href="mailto:morgan.lee@example.com">morgan.lee@example.com</a>
+            </div>
+          </div>
+
+          <div class="contact-item team-member">
+            <h3>Taylor Brooks</h3>
+            <p class="contact-role">Member</p>
+            <div class="contact-details">
+              <a href="mailto:taylor.brooks@example.com">taylor.brooks@example.com</a>
+            </div>
+          </div>
+
+          <div class="contact-item team-member">
+            <h3>Jordan Kim</h3>
+            <p class="contact-role">Member</p>
+            <div class="contact-details">
+              <a href="mailto:jordan.kim@example.com">jordan.kim@example.com</a>
+            </div>
+          </div>
         </div>
       </section>
     </main>
