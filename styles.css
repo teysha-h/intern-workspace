@@ -185,6 +185,17 @@ section {
   margin: 0;
 }
 
+/* Edit mode renders one separate text box per comment; stack them apart so each
+   comment reads as its own entity rather than one big box. */
+.ticket-comment-editors {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ticket-comment-editors .ticket-comment-editor {
+  min-height: 3rem;
+}
+
 .new-ticket-btn {
   border-radius: var(--radius-lg);
   padding: 0.35rem 0.85rem;

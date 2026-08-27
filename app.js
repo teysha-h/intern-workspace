@@ -53,26 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     comments: normalizeComments(ticket.comments, ticket.timestamp),
   });
 
-  const commentsToTextarea = (comments) => {
-    if (!Array.isArray(comments)) return "";
-    return comments.map((comment) => comment.text).join("\n");
-  };
-
-  const parseComments = (value, existingComments = []) => {
-    const lines = String(value || "")
-      .split(/\r?\n/)
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-
-    return lines.map((text) => {
-      const existing = existingComments.find((comment) => comment.text === text);
-      return {
-        text,
-        timestamp: existing?.timestamp || new Date().toISOString(),
-      };
-    });
-  };
-
   const setSyncStatus = (state, message = "") => {
     if (!syncStatusEl) return;
 
@@ -112,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const saveEditingTicket = async (ticketId, fields) => {
-    const { titleInput, ownerInput, statusSelect, commentsInput } = fields;
+    const { titleInput, ownerInput, statusSelect, commentInputs } = fields;
     if (!titleInput.checkValidity() || !ownerInput.checkValidity() || !statusSelect.checkValidity()) {
       titleInput.reportValidity();
       ownerInput.reportValidity();
@@ -124,10 +104,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const owner = String(ownerInput.value || "").trim();
     const status = String(statusSelect.value || "").trim();
     const currentTicket = allTickets.find((ticket) => ticket.id === ticketId);
-    // parseComments refreshes the timestamp for added/edited lines (they no
-    // longer match an existing comment) while keeping the original timestamp
-    // for lines that were left untouched.
-    const comments = parseComments(commentsInput?.value, currentTicket?.comments || []);
+    // Each comment is edited in its own text box (one box per existing
+    // comment). Read them individually: an edited comment gets a fresh
+    // timestamp, an untouched comment keeps its original timestamp, and any
+    // box that was cleared is dropped entirely.
+    const comments = (commentInputs || [])
+      .map((input, index) => {
+        const text = String(input.value || "").trim();
+        if (!text) return null;
+        const existing = currentTicket?.comments?.[index];
+        return {
+          text,
+          timestamp: existing && existing.text === text ? existing.timestamp : new Date().toISOString(),
+        };
+      })
+      .filter((comment) => comment !== null);
 
     if (!title || !owner || !status) {
       return;
@@ -542,11 +533,22 @@ document.addEventListener("DOMContentLoaded", () => {
         row.appendChild(statusCell);
 
         const commentsCell = document.createElement("td");
-        const commentsInput = document.createElement("textarea");
-        commentsInput.name = "comments";
-        commentsInput.rows = 3;
-        commentsInput.value = commentsToTextarea(ticket.comments);
-        commentsCell.appendChild(commentsInput);
+        const commentsContainer = document.createElement("div");
+        commentsContainer.className = "ticket-comment-editors";
+        // One separate text box per existing comment. There is deliberately no
+        // empty "new comment" box, so editing cannot add new comments.
+        const commentInputs = (Array.isArray(ticket.comments) ? ticket.comments : []).map(
+          (comment) => {
+            const commentInput = document.createElement("textarea");
+            commentInput.name = "comments";
+            commentInput.className = "ticket-comment-editor";
+            commentInput.rows = 2;
+            commentInput.value = comment.text;
+            commentsContainer.appendChild(commentInput);
+            return commentInput;
+          }
+        );
+        commentsCell.appendChild(commentsContainer);
         row.appendChild(commentsCell);
 
         row.appendChild(createTextCell(formatTimestamp(ticket.timestamp)));
@@ -558,7 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
         saveButton.textContent = "Save";
         saveButton.addEventListener("click", async (event) => {
           event.preventDefault();
-          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect, commentsInput });
+          await saveEditingTicket(ticket.id, { titleInput, ownerInput, statusSelect, commentInputs });
         });
 
         const cancelButton = document.createElement("button");
