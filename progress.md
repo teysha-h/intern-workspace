@@ -151,3 +151,4 @@ What to include:
 - Added a 'team' section to dispay team members
 - Created a login page so users have to select which team member they are
 - Changed the 'owner' field so it now consists of a drop down menu of team members
+- Created admin rights, so an admin can add, remove, and edit team members
