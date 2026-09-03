@@ -12,6 +12,7 @@
   --radius-sm: 6px;   /* small controls: inputs, selects, small edit buttons */
   --radius-md: 8px;   /* cards, panels, list items */
   --radius-lg: 12px;  /* primary buttons */
+  --sidebar-width: 240px;  /* collapsible side navigation panel width */
 }
 
 body {
@@ -21,6 +22,16 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+  /* Reserve room for the fixed side navigation panel; collapsing the panel
+     releases this space so the content re-centres in the freed width. */
+  padding-left: var(--sidebar-width);
+  transition: padding-left 0.25s ease;
+}
+
+/* Collapsed side nav: the panel slides away and the reserved space is released.
+   The class is toggled by the side navigation code at the top of app.js. */
+body.side-nav-collapsed {
+  padding-left: 0;
 }
 
 /* Typography: explicit heading weights so headings stand out above body text */
@@ -50,8 +61,7 @@ header {
   padding: 1.25rem 0;
 }
 
-header > h1,
-header > nav {
+header > h1 {
   max-width: 1100px;
   margin: 0 auto;
   text-align: center;
@@ -96,12 +106,153 @@ header > h1 {
   font-size: 0.95rem;
 }
 
-header > nav {
+/* ===== Collapsible side navigation =====
+   The former top nav bar now lives in a fixed panel on the left edge. It
+   reuses the app variables (white surface, corporate-blue links) so it
+   matches the rest of the page. <body> reserves space for it, and the
+   toggle buttons in app.js add/remove `side-nav-collapsed` on <body>,
+   which slides the panel off-screen and releases the reserved space. */
+.side-nav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  box-sizing: border-box;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1rem 0.9rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  z-index: 800;
+  transform: translateX(0);
+  transition: transform 0.25s ease;
+}
+
+body.side-nav-collapsed .side-nav {
+  transform: translateX(-100%);
+}
+
+.side-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+/* Small uppercase section label, matching the gauge readout label style. */
+.side-nav-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
+/* Square icon button that collapses the panel; mirrors the app's other small
+   icon buttons (square, thin border, light-blue hover). */
+.side-nav-close-btn {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 0.75rem 1rem;
-  padding: 0 1.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.side-nav-close-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.side-nav-close-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.side-nav nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Panel links: the shared `nav a` rules still supply the accent colour and
+   weight; here they become full-width rows with the app's light-blue pill. */
+.side-nav nav a {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.side-nav nav a:hover {
+  background: var(--accent-light);
+  text-decoration: none;
+}
+
+.side-nav nav a:focus-visible {
+  outline: none;
+  background: var(--accent-light);
+}
+
+/* Floating button that re-opens the panel once it is collapsed. Styled like
+   the signed-in badge (fixed chip on a white surface) so it looks native. */
+.side-nav-open-btn {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.side-nav-open-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.side-nav-open-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Safety net: `hidden` must always win over the display rule above. */
+.side-nav-open-btn[hidden] {
+  display: none;
+}
+
+/* Small screens: the panel overlays the content instead of reserving space,
+   so it gets a soft shadow to separate it from the page underneath. */
+@media (max-width: 720px) {
+  body {
+    padding-left: 0;
+  }
+
+  body:not(.side-nav-collapsed) .side-nav {
+    box-shadow: 0 0 24px rgba(15, 23, 42, 0.18);
+  }
 }
 
 nav a {
