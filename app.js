@@ -1,3 +1,55 @@
+// ===== Collapsible side navigation =====
+// The former top nav bar is now a fixed panel on the left edge of the page.
+// The two buttons below simply add/remove the `side-nav-collapsed` class on
+// <body>; styles.css slides the panel away and releases its reserved space.
+// This runs immediately (the script tag sits after the markup) so a
+// remembered "collapsed" state is applied before the page is painted.
+(() => {
+  const sideNav = document.getElementById("side-nav");
+  const openBtn = document.getElementById("side-nav-open-btn");
+  const closeBtn = document.getElementById("side-nav-close-btn");
+  const storageKey = "intern-workspace-side-nav-collapsed";
+  const overlayQuery = window.matchMedia("(max-width: 720px)");
+
+  if (!sideNav) return;
+
+  // Read the remembered state; without one, start collapsed on small screens
+  // (where the open panel would otherwise cover the content on load).
+  let startCollapsed = overlayQuery.matches;
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored !== null) startCollapsed = stored === "1";
+  } catch (error) {
+    /* Storage unavailable - just use the viewport default. */
+  }
+
+  const setCollapsed = (collapsed) => {
+    document.body.classList.toggle("side-nav-collapsed", collapsed);
+    if (openBtn) {
+      openBtn.hidden = !collapsed;
+      openBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    }
+    try {
+      localStorage.setItem(storageKey, collapsed ? "1" : "0");
+    } catch (error) {
+      /* State simply won't be remembered across reloads. */
+    }
+  };
+
+  if (openBtn) openBtn.addEventListener("click", () => setCollapsed(false));
+  if (closeBtn) closeBtn.addEventListener("click", () => setCollapsed(true));
+
+  // On small screens the open panel overlays the page, so collapse it again
+  // after a link is tapped so the target section stays visible.
+  sideNav.querySelectorAll("nav a").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (overlayQuery.matches) setCollapsed(true);
+    });
+  });
+
+  setCollapsed(startCollapsed);
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   const ticketsSection = document.getElementById("tickets");
   if (!ticketsSection) return;
