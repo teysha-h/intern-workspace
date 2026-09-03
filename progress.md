@@ -185,4 +185,17 @@ __Generally, improve UI of page__
 ### Completed tasks:
 - Comments now added inline to ticket table
 - Ticket tracker comment timestamps are now smaller 
-- Comment column in ticket tracker now formatted more clearly
+- Comment column in ticket tracker now formatted more clearly (formatted as tiles)
+
+
+## Mon - 7th September 2026
+### Completed tasks:
+- General styling and webpage interactions edited and improved
+- Navbar changed to collapsible sidebar
+- Full debugging to ensure style changes did not affect functionality
+
+### Improvements yet to be implemented:
+1. Add a settings panel (incl. sync to JSON button, password changer)
+2. Changed 'signed in as' to an icon
+3. Add a login/logout tab under the user icon
+4. Add icons for all navbar section headings    
