@@ -148,16 +148,20 @@ What to include:
 - Changed 'add comment' button in ticket-tracker to an icon
 - Changed 'mark done' button in todo to an icon
 - Charts created to display ticket and to-do status on dashboard 
+
+
+## Fri - 28th August 2026
+### Completed tasks:
 - Added a 'team' section to dispay team members
 - Created a login page so users have to select which team member they are
 - Changed the 'owner' field so it now consists of a drop down menu of team members
 
 
-## Fri - 28th August 2026
-### Completed tasks:
+## Wed - 2nd September 2026
 - Created admin rights, so an admin can add, remove, and edit team members
 - Created an 'unassigned' badge for tasks with an owner that has been deleted by the admin
 - Edited the formatting of the shared to-do to make it clearer and match the rest of the page
+
 
 ## Thu - 3rd September 2026
 ### Completed tasks:
