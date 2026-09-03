@@ -183,4 +183,4 @@ __Generally, improve UI of page__
 
 ## Fri - 4th September 2026
 ### Completed tasks:
-- 
+- Comments now added inline to ticket table

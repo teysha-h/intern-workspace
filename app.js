@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let writableFileHandle = null;
   const storageKey = "intern-workspace-tickets";
   let editingTicketId = null;
+  let commentingTicketId = null;
   let editingTodoId = null;
   let todoOwnerFilter = "";
   let todoStatusFilter = "";
@@ -690,11 +691,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const startEditingTicket = (ticketId) => {
     editingTicketId = ticketId;
+    // Opening the editor closes any open inline comment composer so only one
+    // row-level editor/composer is open at a time.
+    commentingTicketId = null;
     renderTickets(allTickets);
   };
 
   const cancelEditingTicket = () => {
     editingTicketId = null;
+    renderTickets(allTickets);
+  };
+
+  // Inline "add comment" composer state: exactly one ticket row shows the
+  // composer at a time (same pattern as editingTicketId). The composer
+  // replaces the old native prompt() popup with a text box right inside the
+  // Comments cell of the table.
+  const startAddComment = (ticketId) => {
+    commentingTicketId = ticketId;
+    renderTickets(allTickets);
+  };
+
+  const cancelAddComment = () => {
+    commentingTicketId = null;
+    renderTickets(allTickets);
+  };
+
+  // Saves the inline composer's text as a new comment. Mirrors the previous
+  // prompt() behaviour: empty input is ignored, and the comment keeps the same
+  // { text, timestamp } shape, persisted through the same localStorage / sync
+  // badge / re-render paths every other ticket change uses.
+  const saveAddComment = (ticketId, commentInput) => {
+    const commentText = String(commentInput.value || "").trim();
+    if (!commentText) return;
+
+    const newComment = { text: commentText, timestamp: new Date().toISOString() };
+    allTickets = allTickets.map((item) => {
+      if (item.id !== ticketId) return item;
+      return {
+        ...item,
+        comments: Array.isArray(item.comments) ? [...item.comments, newComment] : [newComment],
+      };
+    });
+
+    saveToLocalStorage(allTickets);
+    commentingTicketId = null;
+    markUnsynced();
     renderTickets(allTickets);
   };
 
@@ -1380,6 +1421,50 @@ document.addEventListener("DOMContentLoaded", () => {
             commentsContainer.appendChild(commentLine);
           });
         }
+        // Inline "add comment" composer: replaces the old native prompt()
+        // popup. While this ticket's composer is open, an auto-growing text
+        // box and Add/Cancel buttons appear directly under the existing
+        // comments inside the same cell, reusing the edit-row box/button
+        // styles so it looks native to the table.
+        if (commentingTicketId === ticket.id) {
+          const composer = document.createElement("div");
+          composer.className = "ticket-comment-composer";
+
+          const commentInput = bindEditorAutosize(document.createElement("textarea"));
+          commentInput.className = "ticket-comment-editor";
+          commentInput.rows = 2;
+          commentInput.setAttribute("aria-label", "New comment");
+          commentInput.placeholder = "Enter a new comment...";
+
+          const composerActions = document.createElement("div");
+          composerActions.className = "ticket-comment-composer-actions";
+
+          const addButton = document.createElement("button");
+          addButton.type = "button";
+          addButton.className = "new-ticket-btn ticket-action-btn";
+          addButton.textContent = "Add";
+          addButton.addEventListener("click", () => saveAddComment(ticket.id, commentInput));
+
+          const cancelButton = document.createElement("button");
+          cancelButton.type = "button";
+          cancelButton.className = "new-ticket-btn ticket-action-btn cancel";
+          cancelButton.textContent = "Cancel";
+          cancelButton.addEventListener("click", () => cancelAddComment());
+
+          // Escape dismisses the composer, matching how the wrapping dropdowns
+          // and other inline editors close on Escape.
+          commentInput.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              cancelAddComment();
+            }
+          });
+
+          composerActions.append(addButton, cancelButton);
+          composer.append(commentInput, composerActions);
+          commentsContainer.appendChild(composer);
+        }
+
         commentsCell.appendChild(commentsContainer);
         row.appendChild(commentsCell);
 
@@ -1392,23 +1477,15 @@ document.addEventListener("DOMContentLoaded", () => {
         addCommentButton.innerHTML = commentIconSvg;
         addCommentButton.setAttribute("aria-label", "Add comment");
         addCommentButton.setAttribute("data-tooltip", "Add comment");
-        addCommentButton.addEventListener("click", async (event) => {
+        // Toggles the inline composer for this row instead of opening the old
+        // native prompt() popup. The saving itself lives in saveAddComment().
+        addCommentButton.addEventListener("click", (event) => {
           event.preventDefault();
-          const commentText = String(prompt("Enter a new comment:") || "").trim();
-          if (!commentText) return;
-
-          const newComment = { text: commentText, timestamp: new Date().toISOString() };
-          allTickets = allTickets.map((item) => {
-            if (item.id !== ticket.id) return item;
-            return {
-              ...item,
-              comments: Array.isArray(item.comments) ? [...item.comments, newComment] : [newComment],
-            };
-          });
-
-          saveToLocalStorage(allTickets);
-          markUnsynced();
-          renderTickets(allTickets);
+          if (commentingTicketId === ticket.id) {
+            cancelAddComment();
+          } else {
+            startAddComment(ticket.id);
+          }
         });
 
         const editButton = document.createElement("button");
@@ -1440,12 +1517,24 @@ document.addEventListener("DOMContentLoaded", () => {
     table.appendChild(tbody);
     ticketsSection.appendChild(table);
 
-    // Fit every edit-mode text box to its content now that the table is in
-    // the document (detached elements measure as zero, so this cannot run
-    // earlier). Only rows being edited contain <textarea> elements, so this
-    // picks up exactly the open editor's title and comment boxes.
-    if (editingTicketId !== null) {
+    // Fit every edit-mode text box (and an open composer's box) to its content
+    // now that the table is in the document (detached elements measure as
+    // zero, so this cannot run earlier). Rows being edited or an open inline
+    // comment composer are the only places that render <textarea> elements, so
+    // this picks up exactly the open editor's boxes and the composer's box.
+    if (editingTicketId !== null || commentingTicketId !== null) {
       table.querySelectorAll("textarea").forEach(autosizeEditorBox);
+    }
+
+    // Refocus a freshly re-created inline comment composer and move the cursor
+    // to the end so typing can continue (the same re-focus trick used by the
+    // search box, keeping the composer usable across any re-render).
+    if (commentingTicketId !== null) {
+      const composerInput = table.querySelector(".ticket-comment-composer .ticket-comment-editor");
+      if (composerInput) {
+        composerInput.focus();
+        composerInput.setSelectionRange(composerInput.value.length, composerInput.value.length);
+      }
     }
   };
 

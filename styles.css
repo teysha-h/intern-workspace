@@ -222,6 +222,32 @@ section {
   min-height: 4.5rem;
 }
 
+/* Inline "add comment" composer shown inside the Comments cell instead of the
+   old browser prompt() popup. It reuses .ticket-comment-editor for the box and
+   the shared .ticket-action-btn buttons, and sits inside the same
+   .ticket-comments grid so its spacing matches the comment items around it. */
+.ticket-comment-composer {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ticket-comment-composer .ticket-comment-editor {
+  min-height: 4.5rem;
+}
+
+.ticket-comment-composer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* The generic .ticket-action-btn rule adds a right/bottom margin for the
+   vertically-stacked action-column buttons; the composer's buttons are laid
+   out in a row by the flex gap above, so drop those margins here. */
+.ticket-comment-composer-actions .ticket-action-btn {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
 /* --- Wrap-capable dropdowns for the ticket edit row -----------------------
    Native <select> popups cannot wrap text, so Owner/Status editors use the
    custom listbox built by buildWrappingDropdown() in app.js. Labels wrap
