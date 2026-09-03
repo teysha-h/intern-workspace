@@ -1417,7 +1417,16 @@ document.addEventListener("DOMContentLoaded", () => {
           ticket.comments.forEach((comment) => {
             const commentLine = document.createElement("div");
             commentLine.className = "ticket-comment-item";
-            commentLine.textContent = `${comment.text} (${formatTimestamp(comment.timestamp)})`;
+            // Each comment is one tile like a shared to-do task: the comment
+            // text on top, and the ticket-table timestamp beneath it as the
+            // muted meta line (mirroring where a to-do shows its owner).
+            const commentText = document.createElement("div");
+            commentText.className = "ticket-comment-text";
+            commentText.textContent = comment.text;
+            const commentMeta = document.createElement("div");
+            commentMeta.className = "ticket-comment-meta";
+            commentMeta.textContent = formatTimestamp(comment.timestamp);
+            commentLine.append(commentText, commentMeta);
             commentsContainer.appendChild(commentLine);
           });
         }

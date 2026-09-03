@@ -193,13 +193,34 @@ section {
   width: 7%;
 }
 
+/* Each comment is its own unshaded tile mirroring the shared to-do list:
+   the comment text on top and the muted ticket-table timestamp beneath.
+   Tiles carry their own bottom margin, so the container adds no extra gap. */
 .ticket-comments {
   display: grid;
-  gap: 0.65rem;
+  gap: 0;
 }
 
 .ticket-comment-item {
-  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: auto;
+  row-gap: 4px;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px; /* small gap between comment tiles */
+  border-radius: var(--radius-md);
+  /* Standalone tile look, but without the tinted shade the to-do tiles use. */
+  border: 1px solid var(--border);
+}
+
+.ticket-comment-item > .ticket-comment-text {
+  font-weight: 400;
+}
+
+.ticket-comment-item > .ticket-comment-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 /* Edit mode renders one separate text box per comment; stack them apart so each
