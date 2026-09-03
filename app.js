@@ -1408,7 +1408,20 @@ document.addEventListener("DOMContentLoaded", () => {
           ownerCell.textContent = ticket.owner || "";
         }
         row.appendChild(ownerCell);
-        row.appendChild(createTextCell(ticket.status || ""));
+        // Read-only Status becomes a tinted pill (see .ticket-status in CSS).
+        // The stored text is unchanged, as is the edit-mode dropdown; this only
+        // wraps the same label in a class so CSS can colour it.
+        const statusLabel = document.createElement("span");
+        statusLabel.className =
+          "ticket-status ticket-status--" +
+          String(ticket.status || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
+        statusLabel.textContent = ticket.status || "";
+        const statusCell = document.createElement("td");
+        statusCell.appendChild(statusLabel);
+        row.appendChild(statusCell);
 
         const commentsCell = document.createElement("td");
         const commentsContainer = document.createElement("div");

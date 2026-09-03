@@ -150,6 +150,76 @@ section {
   vertical-align: top;
 }
 
+/* Distinct header row: tinted background, muted, uppercase labels so the grid
+   reads as a table instead of a wall of borders. Column widths are unchanged
+   because they come from the fixed-layout nth-child rules below. */
+.ticket-table thead th {
+  background: var(--tint);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* Row scanning affordances: a subtle zebra tint on alternate rows and a
+   slightly stronger hover tint. Purely decorative - no layout or logic. */
+.ticket-table tbody tr:nth-child(even) td {
+  background: #fafafc;
+}
+
+.ticket-table tbody tr:hover td {
+  background: var(--tint);
+}
+
+/* The Date Created column reads as quieter secondary metadata. */
+.ticket-table td:nth-child(6) {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Read-only Status column: a tinted pill per value. Colors reuse the existing
+   status tints used elsewhere on the page (done-green, pending-amber,
+   accent-blue), and only style the label - the stored string, the sort logic
+   and the edit-mode dropdown are untouched. */
+.ticket-status {
+  display: inline-block;
+  padding: 0.1rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  background: var(--tint);
+  color: var(--text);
+}
+
+.ticket-status--open {
+  background: #dff7d9;
+  color: #166534;
+}
+
+.ticket-status--in-progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ticket-status--resolved {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* Empty-state panel shown when there are no tickets (or no search matches). */
+.tickets-no-results {
+  margin: 1rem 0 0;
+  padding: 1.25rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  text-align: center;
+}
+
 .ticket-table th:nth-child(1),
 .ticket-table td:nth-child(1) {
   width: 7%;
@@ -216,6 +286,9 @@ section {
 
 .ticket-comment-item > .ticket-comment-text {
   font-weight: 400;
+  /* Preserve line breaks from multi-line comment text (textContent collapses
+     them by default) while still wrapping long single lines naturally. */
+  white-space: pre-line;
 }
 
 .ticket-comment-item > .ticket-comment-meta {
@@ -430,6 +503,18 @@ section {
   background: var(--surface);
   color: var(--text);
   font-family: Helvetica, Geneva, sans-serif;
+}
+
+/* Visible focus rings for the toolbar/form controls so keyboard navigation is
+   obvious, matching the wrapping-dropdown focus style used in edit mode. */
+.tickets-search input:focus-visible,
+.tickets-sort select:focus-visible,
+.ticket-form input:focus-visible,
+.ticket-form select:focus-visible,
+.ticket-form textarea:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 
