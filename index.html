@@ -6,19 +6,37 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Intern Workspace</h1>
+    <!-- Floating button that re-opens the side navigation after it has been
+         collapsed. Hidden by default; app.js reveals it only while the panel
+         is collapsed. -->
+    <button
+      id="side-nav-open-btn"
+      type="button"
+      class="side-nav-open-btn"
+      aria-label="Open navigation menu"
+      aria-controls="side-nav"
+      aria-expanded="true"
+      hidden
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
 
-      <div class="sync-controls">
-        <span id="sync-status" class="sync-badge connected">All changes synced</span>
-        <button id="sync-json-btn" type="button" class="new-ticket-btn">
-          Save JSON
+    <!-- Side navigation panel. The old top nav bar now lives here as a
+         collapsible panel on the left edge of the page; the links are
+         unchanged. app.js toggles `side-nav-collapsed` on <body>. -->
+    <aside class="side-nav" id="side-nav">
+      <div class="side-nav-header">
+        <span class="side-nav-title">Menu</span>
+        <button
+          id="side-nav-close-btn"
+          type="button"
+          class="side-nav-close-btn"
+          aria-label="Collapse navigation menu"
+          aria-controls="side-nav"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
       </div>
-
-      <p class="sync-help">
-        Local storage saves your tickets immediately. Connect a JSON file to sync the latest data manually.
-      </p>
 
       <nav>
         <a href="#dashboard">Dashboard</a>
@@ -30,6 +48,18 @@
         <a href="#contacts">Contacts</a>
         <a href="#team">Team</a>
       </nav>
+    </aside>
+
+    <header>
+      <h1>Intern Workspace</h1>
+
+      <div class="sync-controls">
+        <span id="sync-status" class="sync-badge connected">All changes synced</span>
+        <button id="sync-json-btn" type="button" class="new-ticket-btn">
+          Save JSON
+        </button>
+      </div>
+
     </header>
 
     <main>
