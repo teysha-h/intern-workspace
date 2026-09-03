@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let sortMode = "default";
   let writableFileHandle = null;
-  let hasUnsyncedChanges = false;
   const storageKey = "intern-workspace-tickets";
   let editingTicketId = null;
   let editingTodoId = null;
@@ -504,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!form.reportValidity()) return;
       const name = String(nameInput.value || "").trim();
       if (!name) return;
-      if (teamMembers.some((m) => m.name.toLowerCase() === name.toLowerCase())) {
+      if (teamMembers.some((m) => String(m.name || "").toLowerCase() === name.toLowerCase())) {
         nameInput.setCustomValidity("A team member with this name already exists.");
         form.reportValidity();
         nameInput.setCustomValidity("");
@@ -593,6 +592,19 @@ document.addEventListener("DOMContentLoaded", () => {
     return form;
   };
 
+  // Shared data.json loader. Each section used to fetch("data.json") on its
+  // own; this memoizes a single request to one network call that every section
+  // and the sync-status check reuse. It mirrors the old
+  // "response.ok ? response.json() : null" shape, so a bad response resolves to
+  // null and every caller keeps exactly its current fallback behaviour.
+  let dataJsonPromise = null;
+  const loadDataJson = () => {
+    if (!dataJsonPromise) {
+      dataJsonPromise = fetch("data.json").then((response) => (response.ok ? response.json() : null));
+    }
+    return dataJsonPromise;
+  };
+
   // Initialize Team: prefer localStorage, then data.json (if it has a team key),
   // else seed from the existing hard-coded cards in #team-list so nothing in
   // index.html has to change. Rendering here (before tickets/todos first render)
@@ -616,8 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTeam();
       return;
     }
-    fetch("data.json")
-      .then((res) => (res.ok ? res.json() : null))
+    loadDataJson()
       .then((data) => {
         if (data && Array.isArray(data.team)) {
           teamMembers = data.team;
@@ -670,22 +681,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
     const markUnsynced = () => {
-    try {
-      localStorage.setItem("intern-workspace-unsynced", "true");
-    } catch (e) {
-      console.warn("Unable to save unsynced status to localStorage", e);
-    }
-    hasUnsyncedChanges = true;
     setSyncStatus("unsynced", "Unsynced changes");
   };
 
     const markSynced = () => {
-    try {
-      localStorage.setItem("intern-workspace-unsynced", "false");
-    } catch (e) {
-      console.warn("Unable to save unsynced status to localStorage", e);
-    }
-    hasUnsyncedChanges = false;
     setSyncStatus("synced", "All changes synced");
   };
 
@@ -1106,7 +1105,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     sortForm.addEventListener("change", (event) => {
-      event.preventDefault();
       const formData = new FormData(sortForm);
       sortMode = String(formData.get("sortMode") || "default");
       renderTickets(allTickets);
@@ -1467,12 +1465,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // If tickets aren't in localStorage, load from data.json (supports legacy array or new object shape)
   if (storedTickets === null) {
-    fetch("data.json")
-      .then((response) => {
-        if (!response.ok) throw new Error("Network response was not ok");
-        return response.json();
-      })
+    loadDataJson()
       .then((data) => {
+        if (data === null) throw new Error("Network response was not ok");
         if (Array.isArray(data)) {
           // legacy: array of tickets
           allTickets = data.map(normalizeTicket);
@@ -1858,8 +1853,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     // fallback: try fetching data.json if tickets were not already loaded from it
-    fetch("data.json")
-      .then((res) => (res.ok ? res.json() : null))
+    loadDataJson()
       .then((data) => {
         if (!data) {
           window._sharedTodos = [];
@@ -2234,8 +2228,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderOnboarding();
       return;
     }
-    fetch("data.json")
-      .then((res) => (res.ok ? res.json() : null))
+    loadDataJson()
       .then((data) => {
         if (data && Array.isArray(data.onboarding)) {
           onboardingDocuments = data.onboarding;
@@ -2456,8 +2449,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderFaq();
       return;
     }
-    fetch("data.json")
-      .then((res) => (res.ok ? res.json() : null))
+    loadDataJson()
       .then((data) => {
         if (data && Array.isArray(data.faq)) {
           faqItems = data.faq;
@@ -2723,8 +2715,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderContacts();
       return;
     }
-    fetch("data.json")
-      .then((res) => (res.ok ? res.json() : null))
+    loadDataJson()
       .then((data) => {
         if (data && Array.isArray(data.contacts)) {
           contactsItems = data.contacts;
@@ -2770,9 +2761,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const refreshSyncState = async () => {
     try {
-      const response = await fetch("data.json");
-      if (!response.ok) return;
-      const fileData = await response.json();
+      const fileData = await loadDataJson();
+      if (fileData === null) return;
       const onDisk = Array.isArray(fileData)
         ? { tickets: fileData, todos: [] }
         : fileData || {};
