@@ -167,3 +167,20 @@ What to include:
 ### Completed tasks:
 - Ran debugging and efficiency test using AI
 - Removed redundant code from app.js whilst maintaining webpage style and functionality
+- Started working on use-case diagram
+
+### Next steps (after review):
+__Generally, improve UI of page__
+1. Improve UI for ticket tracker grid
+2. Enable comments to be added inline in ticket table
+3. Make comments for ticket tracker clearer, with smaller timestamps
+4. Align navbar on LHS instead of top banner
+5. Add a settings panel (incl. sync to JSON button, password changer)
+6. Changed 'signed in as' to an icon
+7. Add a login/logout tab under the user icon
+8. Add icons for all navbar section headings     
+
+
+## Fri - 4th September 2026
+### Completed tasks:
+- 
