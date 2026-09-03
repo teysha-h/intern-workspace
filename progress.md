@@ -151,6 +151,14 @@ What to include:
 - Added a 'team' section to dispay team members
 - Created a login page so users have to select which team member they are
 - Changed the 'owner' field so it now consists of a drop down menu of team members
+
+
+## Fri - 28th August 2026
+### Completed tasks:
 - Created admin rights, so an admin can add, remove, and edit team members
 - Created an 'unassigned' badge for tasks with an owner that has been deleted by the admin
 - Edited the formatting of the shared to-do to make it clearer and match the rest of the page
+
+## Thu - 3rd September 2026
+### Completed tasks:
+- 
