@@ -165,4 +165,5 @@ What to include:
 
 ## Thu - 3rd September 2026
 ### Completed tasks:
-- 
+- Ran debugging and efficiency test using AI
+- Removed redundant code from app.js whilst maintaining webpage style and functionality
