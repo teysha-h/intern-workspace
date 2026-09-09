@@ -199,3 +199,8 @@ __Generally, improve UI of page__
 2. Changed 'signed in as' to an icon
 3. Add a login/logout tab under the user icon
 4. Add icons for all navbar section headings    
+
+
+## Wed - 9th September 2026
+### Completed tasks:
+-    
