@@ -96,7 +96,7 @@
       "task": "testing 2",
       "owner": "Barry Allen",
       "dueDate": "2026-08-29T00:00:00.000Z",
-      "completed": true,
+      "completed": false,
       "createdAt": "2026-08-27T03:17:38.785Z"
     },
     {

@@ -5,11 +5,12 @@
 // This runs immediately (the script tag sits after the markup) so a
 // remembered "collapsed" state is applied before the page is painted.
 
-// localStorage key shared by the side navigation code below and the Settings
-// section block further down app.js. It pins how the sidebar starts
+// localStorage key that pins how the sidebar starts
 // ("always-expanded" / "always-collapsed"); when unset the sidebar falls back
 // to remembering its last open/collapsed state, exactly as it did before the
-// Settings section existed.
+// Settings section existed. The value is honoured if present (for example a
+// preference stored by an earlier version), even though the Settings panel no
+// longer offers a control for it.
 const SIDEBAR_START_PREF_KEY = "intern-workspace-settings-sidebar-start";
 
 (() => {
@@ -31,8 +32,9 @@ const SIDEBAR_START_PREF_KEY = "intern-workspace-settings-sidebar-start";
     /* Storage unavailable - just use the viewport default. */
   }
 
-  // A start state pinned in the Settings section overrides the remembered
-  // state above; with no preference set, the behaviour is unchanged.
+  // A start state pinned in the (now removed) Settings control overrides the
+  // remembered state above where one exists already; with no preference set,
+  // the behaviour is unchanged.
   try {
     const startPref = localStorage.getItem(SIDEBAR_START_PREF_KEY);
     if (startPref === "always-expanded") startCollapsed = false;
@@ -2989,16 +2991,14 @@ document.addEventListener("DOMContentLoaded", () => {
   applyRoute();
 
   // ===== Settings panel =====
-  // Builds the controls for the #settings section (opened from the new
-  // "Settings" entry in the side navigation; the hash router above shows the
-  // section automatically). Two device-level preferences are offered:
-  //   1. "Sidebar on load" - pins how the sidebar starts. The side navigation
-  //      code at the top of app.js reads this preference on every load; with
-  //      "Remember my last choice" (the default) it behaves exactly as before.
-  //   2. "Reset preferences" - clears the remembered UI preferences (sidebar
-  //      open/collapsed state and the pinned start state) and reloads the
-  //      page. Workspace data (tickets, to-dos, FAQ, contacts, team, links,
-  //      onboarding) is intentionally left untouched.
+  // Builds the controls for the #settings section (opened from the "Settings"
+  // entry in the side navigation; the hash router above shows the section
+  // automatically). Two items are offered:
+  //   1. "Sync to JSON" - performs the same action as the "Save JSON" button in
+  //      the header: it calls the very same syncToJsonFile() helper, so all
+  //      workspace data is written to the connected JSON file exactly as before.
+  //   2. "Change admin password" - a placeholder only. The password changer is
+  //      not implemented yet, so this is a disabled button with no behaviour.
   // Everything is self-contained and guarded with an early return, so if the
   // section is ever missing from the markup the rest of the page is unaffected.
   (function initSettings() {
@@ -3006,88 +3006,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const settingsList = document.getElementById("settings-list");
     if (!settingsSection || !settingsList) return;
 
-    const navStateKey = "intern-workspace-side-nav-collapsed";
+    // Row 1: sync to the JSON file, wired to the existing sync helper so the
+    // behaviour is identical to the "Save JSON" button in the header.
+    const syncRow = document.createElement("div");
+    syncRow.className = "settings-item";
 
-    const readStartPref = () => {
-      try {
-        return localStorage.getItem(SIDEBAR_START_PREF_KEY) || "";
-      } catch (error) {
-        return "";
-      }
-    };
+    const syncLabel = document.createElement("p");
+    syncLabel.className = "settings-item-label";
+    syncLabel.textContent = "Sync to JSON";
 
-    const writeStartPref = (value) => {
-      try {
-        if (value) localStorage.setItem(SIDEBAR_START_PREF_KEY, value);
-        else localStorage.removeItem(SIDEBAR_START_PREF_KEY);
-      } catch (error) {
-        /* Preference simply will not persist across reloads. */
-      }
-    };
-
-    // Row 1: sidebar start state, as a compact select of the three choices.
-    const startRow = document.createElement("div");
-    startRow.className = "settings-item";
-
-    const startLabel = document.createElement("label");
-    startLabel.className = "settings-item-label";
-    startLabel.textContent = "Sidebar on load";
-    startLabel.htmlFor = "settings-sidebar-start";
-
-    const startSelect = document.createElement("select");
-    startSelect.id = "settings-sidebar-start";
-    [
-      { value: "", label: "Remember my last choice" },
-      { value: "always-expanded", label: "Always start expanded" },
-      { value: "always-collapsed", label: "Always start collapsed" },
-    ].forEach((option) => {
-      const opt = document.createElement("option");
-      opt.value = option.value;
-      opt.textContent = option.label;
-      startSelect.appendChild(opt);
-    });
-    startSelect.value = readStartPref();
-    startSelect.addEventListener("change", () =>
-      writeStartPref(startSelect.value)
-    );
-
-    const startHint = document.createElement("p");
-    startHint.className = "settings-item-hint";
-    startHint.textContent =
-      "Overrides the remembered open/collapsed state the next time the page loads.";
-
-    startRow.append(startLabel, startSelect, startHint);
-
-    // Row 2: reset the remembered UI preferences only (never workspace data).
-    const resetRow = document.createElement("div");
-    resetRow.className = "settings-item";
-
-    const resetLabel = document.createElement("p");
-    resetLabel.className = "settings-item-label";
-    resetLabel.textContent = "Reset preferences";
-
-    const resetButton = document.createElement("button");
-    resetButton.type = "button";
-    resetButton.className = "new-ticket-btn settings-reset-btn";
-    resetButton.textContent = "Reset sidebar preferences";
-    resetButton.addEventListener("click", () => {
-      try {
-        localStorage.removeItem(navStateKey);
-        localStorage.removeItem(SIDEBAR_START_PREF_KEY);
-      } catch (error) {
-        /* Nothing to clear when storage is unavailable. */
-      }
-      window.location.reload();
+    const syncButton = document.createElement("button");
+    syncButton.type = "button";
+    syncButton.className = "new-ticket-btn settings-btn";
+    syncButton.textContent = "Sync to JSON";
+    syncButton.addEventListener("click", () => {
+      syncToJsonFile();
     });
 
-    const resetHint = document.createElement("p");
-    resetHint.className = "settings-item-hint";
-    resetHint.textContent =
-      "Clears the remembered sidebar position and the start preference above. Workspace data is not affected.";
+    const syncHint = document.createElement("p");
+    syncHint.className = "settings-item-hint";
+    syncHint.textContent =
+      "Same action as the Save JSON button in the header: writes all workspace data to the connected JSON file.";
 
-    resetRow.append(resetLabel, resetButton, resetHint);
+    syncRow.append(syncLabel, syncButton, syncHint);
 
-    settingsList.append(startRow, resetRow);
+    // Row 2: change the admin password - placeholder only, not built yet.
+    const passwordRow = document.createElement("div");
+    passwordRow.className = "settings-item";
+
+    const passwordLabel = document.createElement("p");
+    passwordLabel.className = "settings-item-label";
+    passwordLabel.textContent = "Change admin password";
+
+    const passwordButton = document.createElement("button");
+    passwordButton.type = "button";
+    passwordButton.className = "new-ticket-btn settings-btn";
+    passwordButton.textContent = "Change password";
+    passwordButton.disabled = true;
+
+    const passwordHint = document.createElement("p");
+    passwordHint.className = "settings-item-hint";
+    passwordHint.textContent =
+      "Coming soon - this feature is not implemented yet.";
+
+    passwordRow.append(passwordLabel, passwordButton, passwordHint);
+
+    settingsList.append(syncRow, passwordRow);
   })();
 
   // ===== Login "who are you?" popup + signed-in badge =====

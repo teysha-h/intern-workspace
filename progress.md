@@ -203,4 +203,4 @@ __Generally, improve UI of page__
 
 ## Wed - 9th September 2026
 ### Completed tasks:
--    
+- Settings section added to side panel

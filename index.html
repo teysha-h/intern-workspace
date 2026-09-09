@@ -51,16 +51,16 @@
       </nav>
     </aside>
 
+    <!-- Floating sync-status chip. The sync-to-JSON action now lives in the
+         Settings section, so only the status indicator remains up here; it is
+         pinned to the top-right corner directly below the signed-in badge.
+         app.js updates it via #sync-status exactly as before. -->
+    <div class="sync-status-corner">
+      <span id="sync-status" class="sync-badge connected">All changes synced</span>
+    </div>
+
     <header>
       <h1>Intern Workspace</h1>
-
-      <div class="sync-controls">
-        <span id="sync-status" class="sync-badge connected">All changes synced</span>
-        <button id="sync-json-btn" type="button" class="new-ticket-btn">
-          Save JSON
-        </button>
-      </div>
-
     </header>
 
     <main>
