@@ -74,6 +74,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const ticketsSection = document.getElementById("tickets");
   if (!ticketsSection) return;
 
+  // Admin password store. The login popup checks this exact value when an admin
+  // signs in, and the Settings panel's password changer overwrites it. It lives
+  // in localStorage (like every other workspace setting) so a change survives a
+  // reload; until one is saved, the well-known default below keeps fresh
+  // browsers behaving exactly as they did before the changer existed.
+  const adminPasswordStorageKey = "intern-workspace-admin-password";
+  const DEFAULT_ADMIN_PASSWORD = "abc123";
+
+  const getAdminPassword = () => {
+    try {
+      const stored = localStorage.getItem(adminPasswordStorageKey);
+      return typeof stored === "string" && stored.length > 0
+        ? stored
+        : DEFAULT_ADMIN_PASSWORD;
+    } catch (error) {
+      return DEFAULT_ADMIN_PASSWORD;
+    }
+  };
+
+  const setAdminPassword = (password) => {
+    try {
+      localStorage.setItem(adminPasswordStorageKey, password);
+    } catch (error) {
+      console.warn("Unable to save admin password locally", error);
+    }
+  };
+
   const syncStatusEl = document.getElementById("sync-status");
   const syncJsonBtn = document.getElementById("sync-json-btn");
 
@@ -2997,8 +3024,11 @@ document.addEventListener("DOMContentLoaded", () => {
   //   1. "Sync to JSON" - performs the same action as the "Save JSON" button in
   //      the header: it calls the very same syncToJsonFile() helper, so all
   //      workspace data is written to the connected JSON file exactly as before.
-  //   2. "Change admin password" - a placeholder only. The password changer is
-  //      not implemented yet, so this is a disabled button with no behaviour.
+  //   2. "Change admin password" - an admin-only form (the same isAdminView()
+  //      gate the Team section uses). It asks for the current password, then
+  //      the new one twice, and only writes through to the shared admin-password
+  //      store when the current password matches and the two new entries are
+  //      identical. No strength rules are enforced on the new value.
   // Everything is self-contained and guarded with an early return, so if the
   // section is ever missing from the markup the rest of the page is unaffected.
   (function initSettings() {
@@ -3035,33 +3065,106 @@ document.addEventListener("DOMContentLoaded", () => {
       syncActions.appendChild(syncStatusEl);
     }
 
-    const syncHint = document.createElement("p");
-    syncHint.className = "settings-item-hint";
-    syncHint.textContent =
-      "Same action as the Save JSON button in the header: writes all workspace data to the connected JSON file.";
+    syncRow.append(syncLabel, syncActions);
 
-    syncRow.append(syncLabel, syncActions, syncHint);
-
-    // Row 2: change the admin password - placeholder only, not built yet.
+    // Row 2: change the admin password. Only visible while an admin is signed
+    // in; the sign-in flow toggles this same row to match the chosen identity.
+    // The three checks the task asks for all live in the submit handler below.
     const passwordRow = document.createElement("div");
     passwordRow.className = "settings-item";
+    passwordRow.id = "settings-password-row";
+    passwordRow.hidden = !isAdminView();
 
     const passwordLabel = document.createElement("p");
     passwordLabel.className = "settings-item-label";
     passwordLabel.textContent = "Change admin password";
 
-    const passwordButton = document.createElement("button");
-    passwordButton.type = "button";
-    passwordButton.className = "new-ticket-btn settings-btn";
-    passwordButton.textContent = "Change password";
-    passwordButton.disabled = true;
+    const passwordForm = document.createElement("form");
+    passwordForm.className = "settings-password-form";
+    passwordForm.noValidate = true;
 
-    const passwordHint = document.createElement("p");
-    passwordHint.className = "settings-item-hint";
-    passwordHint.textContent =
-      "Coming soon - this feature is not implemented yet.";
+    const currentLabel = document.createElement("label");
+    currentLabel.className = "settings-password-label";
+    currentLabel.textContent = "Current password";
+    const currentInput = document.createElement("input");
+    currentInput.type = "password";
+    currentInput.name = "current-password";
+    currentInput.autocomplete = "current-password";
+    currentInput.placeholder = "Enter current password";
+    currentLabel.appendChild(currentInput);
 
-    passwordRow.append(passwordLabel, passwordButton, passwordHint);
+    const newLabel = document.createElement("label");
+    newLabel.className = "settings-password-label";
+    newLabel.textContent = "New password";
+    const newInput = document.createElement("input");
+    newInput.type = "password";
+    newInput.name = "new-password";
+    newInput.autocomplete = "new-password";
+    newInput.placeholder = "Enter new password";
+    newLabel.appendChild(newInput);
+
+    const confirmLabel = document.createElement("label");
+    confirmLabel.className = "settings-password-label";
+    confirmLabel.textContent = "Confirm new password";
+    const confirmInput = document.createElement("input");
+    confirmInput.type = "password";
+    confirmInput.name = "confirm-password";
+    confirmInput.autocomplete = "new-password";
+    confirmInput.placeholder = "Enter new password again";
+    confirmLabel.appendChild(confirmInput);
+
+    const passwordMessage = document.createElement("p");
+    passwordMessage.className = "settings-password-message";
+    passwordMessage.hidden = true;
+
+    const passwordActions = document.createElement("div");
+    passwordActions.className = "settings-password-actions";
+
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "submit";
+    confirmButton.className = "new-ticket-btn settings-btn";
+    confirmButton.textContent = "Confirm";
+
+    passwordActions.appendChild(confirmButton);
+
+    passwordForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (currentInput.value !== getAdminPassword()) {
+        passwordMessage.className = "settings-password-message error";
+        passwordMessage.textContent = "Current password is incorrect.";
+        passwordMessage.hidden = false;
+        currentInput.focus();
+        return;
+      }
+
+      if (!newInput.value || newInput.value !== confirmInput.value) {
+        passwordMessage.className = "settings-password-message error";
+        passwordMessage.textContent = "New passwords do not match.";
+        passwordMessage.hidden = false;
+        newInput.focus();
+        return;
+      }
+
+      setAdminPassword(newInput.value);
+      currentInput.value = "";
+      newInput.value = "";
+      confirmInput.value = "";
+      passwordMessage.className = "settings-password-message success";
+      passwordMessage.textContent = "Password changed successfully.";
+      passwordMessage.hidden = false;
+      confirmButton.focus();
+    });
+
+    passwordForm.append(
+      currentLabel,
+      newLabel,
+      confirmLabel,
+      passwordMessage,
+      passwordActions,
+    );
+
+    passwordRow.append(passwordLabel, passwordForm);
 
     settingsList.append(syncRow, passwordRow);
   })();
@@ -3160,10 +3263,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Inline password prompt shown when the admin card is selected. Hides the
     // member list and swaps the prompt text for a small form. The correct
-    // password (abc123) completes the sign-in; a wrong/empty password shows an
+    // password (the shared admin password - default abc123, editable from the
+    // Settings panel) completes the sign-in; a wrong/empty password shows an
     // inline error and keeps the popup open for another try. "Cancel" returns
     // to the member list so a user can pick a non-admin if they change their mind.
-    const adminPassword = "abc123";
 
     const showAdminPasswordPrompt = (member) => {
       const originalPrompt = prompt.textContent;
@@ -3216,7 +3319,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const submitHandler = (event) => {
         event.preventDefault();
-        if (input.value === adminPassword) {
+        if (input.value === getAdminPassword()) {
           signIn(member);
         } else {
           error.textContent = "Incorrect password. Please try again.";
@@ -3243,6 +3346,12 @@ document.addEventListener("DOMContentLoaded", () => {
       renderUserBadge(member);
       close();
       renderTeam();
+
+      // Reveal (or keep hidden) the admin-only "Change admin password" row to
+      // match the identity just chosen; on a reload with a saved session the
+      // row was already set correctly while the Settings panel was built.
+      const passwordRow = document.getElementById("settings-password-row");
+      if (passwordRow) passwordRow.hidden = !member.admin;
     };
 
     members.forEach((member) => {

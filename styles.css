@@ -2317,12 +2317,6 @@ summary {
   box-sizing: border-box;
 }
 
-.settings-item-hint {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
 /* The Sync to JSON button and the live status chip sit side by side on one
    row inside the settings list item. */
 .settings-sync-actions {
@@ -2350,15 +2344,75 @@ summary {
   background: var(--accent-hover);
 }
 
-/* Disabled placeholder (the not-yet-implemented password changer) drops the
-   accent colours so it clearly reads as inactive. */
-.settings-btn:disabled {
-  background: var(--tint);
-  color: var(--muted);
-  border-color: var(--border);
-  cursor: not-allowed;
+/* The Settings "Sync to JSON" button is slightly smaller than the default
+   action button (less text size and padding) so the row reads as a compact
+   control. Scope is limited to this row's button only - the Confirm button in
+   the password changer and every other action button are untouched, and only
+   size-related properties differ. */
+.settings-sync-actions .settings-btn {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.7rem;
 }
 
-.settings-btn:disabled:hover {
-  background: var(--tint);
+/* The Change-admin-password form inside a settings item. Fields stack as
+   label-above-input (the same pattern the login modal's password prompt uses)
+   and are wired to the app variables so they match the rest of the page. The
+   `[hidden]` rule is a safety net so the admin-only row really stays hidden
+   even though .settings-item uses `display: grid`. */
+.settings-item[hidden] {
+  display: none;
+}
+
+.settings-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-password-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.settings-password-label input {
+  padding: 0.5rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-password-label input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.settings-password-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-password-message {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.settings-password-message[hidden] {
+  display: none;
+}
+
+.settings-password-message.error {
+  color: #b91c1c;
+}
+
+.settings-password-message.success {
+  color: #1e7a34;
 }
