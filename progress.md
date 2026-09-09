@@ -209,3 +209,8 @@ __Generally, improve UI of page__
 - Added a logout button to switch users
 - 'Signed in as' changed to icon instead
 - Icons added to all navbar section headings
+
+
+## Thu - 10th September 2026
+### Completed tasks:
+- Use-case diagram for system created
