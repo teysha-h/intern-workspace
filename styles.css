@@ -2147,9 +2147,10 @@ summary {
 }
 
 /* ===== Signed-in badge + Logout button (top-right corner) =====
-   The fixed wrapper (top-right corner) holds the "signed in as" chip and a
-   Logout button beneath it. Both reuse the app variables so they look native
-   to the page's card/button styling. */
+   The fixed wrapper (top-right corner) holds a pill chip with a small user
+   avatar and the signed-in user's name, plus a Logout button beneath it. Both
+   reuse the app variables so they look native to the page's card/button
+   styling. */
 .signed-in-badge {
   position: fixed;
   top: 0.75rem;
@@ -2168,25 +2169,25 @@ summary {
   align-items: center;
   gap: 0.4rem;
   padding: 0.4rem 0.75rem;
-  background: var(--surface);
-  color: var(--text);
+  /* Light blue tint for every signed-in badge, admins included. */
+  background: var(--accent-light);
+  color: var(--accent);
   border: 1px solid var(--border);
   border-radius: 999px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
 }
 
-.signed-in-badge .signed-in-badge-label {
-  color: var(--muted);
-}
-
+/* The user avatar inherits the chip's color via stroke="currentColor"; the name
+   beside it is bold and accent-tinted like the original badge text. */
 .signed-in-badge .signed-in-badge-name {
   font-weight: 700;
   color: var(--accent);
 }
 
+/* Admins stand out from regular members via the accent border alone; the
+   light blue tint now applies to all badges above. */
 .signed-in-badge-chip.admin {
   border-color: var(--accent);
-  background: var(--accent-light);
 }
 
 /* Compact Logout button under the badge. Like the page's other small buttons

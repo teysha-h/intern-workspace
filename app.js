@@ -3171,7 +3171,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== Login "who are you?" popup + signed-in badge =====
   // Shows the modal overlay (once per browser session on first load, and again
-  // whenever Logout is chosen) and keeps a small "signed in as" badge in the
+  // whenever Logout is chosen) and keeps a small user-icon badge in the
   // top-right corner that reflects the saved identity, with a Logout button
   // below it. The list of people is read live from the existing Team section
   // (#team-list) each time the popup opens, so it always matches the roster on
@@ -3180,9 +3180,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // the already-functional page without re-wiring any existing logic.
   const userStorageKey = "intern-workspace-current-user";
 
-  // Builds/updates the persistent badge that shows who is signed in, with a
-  // Logout button directly beneath it. If no member is provided the badge is
-  // left in place (the popup just closes).
+  // Builds/updates the persistent user-icon badge for the signed-in identity,
+  // with a Logout button directly beneath it. If no member is provided the
+  // badge is left in place (the popup just closes).
   const renderUserBadge = (member) => {
     if (!member || !member.name) return;
     let badgeWrap = document.getElementById("signed-in-badge");
@@ -3198,19 +3198,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const chip = document.createElement("div");
     chip.className = "signed-in-badge-chip";
 
-    const label = document.createElement("span");
-    label.className = "signed-in-badge-label";
-    label.textContent = "Signed in as";
-
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "signed-in-badge-name";
-    nameSpan.textContent = member.name;
-
     if (member.admin) chip.classList.add("admin");
     else chip.classList.remove("admin");
 
     if (member.role) badgeWrap.setAttribute("data-role", member.role);
-    chip.append(label, nameSpan);
+
+    // Feather "user" avatar icon (same stroke style as the page's other icons)
+    // sits beside the user's name. The icon inherits the chip's color via
+    // stroke="currentColor"; role="img" + aria-label keep the identity
+    // announced to screen readers and the title shows it as a hover tooltip.
+    const safeName = String(member.name)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+    chip.title = `Signed in as ${member.name}`;
+    chip.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Signed in as ' + safeName + '"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "signed-in-badge-name";
+    nameSpan.textContent = member.name;
+    chip.appendChild(nameSpan);
+
     badgeWrap.appendChild(chip);
 
     // Logout clears the saved identity, hides the badge and re-opens the same
