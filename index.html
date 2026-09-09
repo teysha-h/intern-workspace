@@ -47,6 +47,7 @@
         <a href="#faq">FAQ</a>
         <a href="#contacts">Contacts</a>
         <a href="#team">Team</a>
+        <a href="#settings">Settings</a>
       </nav>
     </aside>
 
@@ -231,6 +232,17 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- Settings section: opened from the "Settings" entry in the side
+           navigation. The hash router in app.js treats every `main > section`
+           as its own page, so this card stays hidden until #settings is
+           selected and needs no extra routing logic. The preference controls
+           inside the list below are built and wired by the settings block in
+           app.js. -->
+      <section id="settings">
+        <h2>Settings</h2>
+        <div class="settings-list" id="settings-list"></div>
       </section>
     </main>
 

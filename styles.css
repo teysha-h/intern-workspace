@@ -2283,3 +2283,71 @@ summary {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
 }
+
+/* ===== Settings section =====
+   The card shown when "Settings" is chosen in the side navigation. The card
+   itself comes from the shared `main > section` rules (the hash router in
+   app.js applies the full-width treatment when the section is active); only
+   the preference rows inside it are styled here, reusing the app variables
+   so it matches the rest of the page. */
+.settings-intro {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.settings-list {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 560px;
+}
+
+.settings-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--tint);
+}
+
+.settings-item-label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.settings-item select {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.settings-item-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* The reset button reuses the shared .new-ticket-btn shape; this adds the
+   accent colours (mirroring #sync-json-btn) and keeps it from stretching
+   across the full row width. */
+.settings-reset-btn {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  justify-self: start;
+  align-self: start;
+}
+
+.settings-reset-btn:hover {
+  background: var(--accent-hover);
+}

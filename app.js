@@ -4,6 +4,14 @@
 // <body>; styles.css slides the panel away and releases its reserved space.
 // This runs immediately (the script tag sits after the markup) so a
 // remembered "collapsed" state is applied before the page is painted.
+
+// localStorage key shared by the side navigation code below and the Settings
+// section block further down app.js. It pins how the sidebar starts
+// ("always-expanded" / "always-collapsed"); when unset the sidebar falls back
+// to remembering its last open/collapsed state, exactly as it did before the
+// Settings section existed.
+const SIDEBAR_START_PREF_KEY = "intern-workspace-settings-sidebar-start";
+
 (() => {
   const sideNav = document.getElementById("side-nav");
   const openBtn = document.getElementById("side-nav-open-btn");
@@ -21,6 +29,16 @@
     if (stored !== null) startCollapsed = stored === "1";
   } catch (error) {
     /* Storage unavailable - just use the viewport default. */
+  }
+
+  // A start state pinned in the Settings section overrides the remembered
+  // state above; with no preference set, the behaviour is unchanged.
+  try {
+    const startPref = localStorage.getItem(SIDEBAR_START_PREF_KEY);
+    if (startPref === "always-expanded") startCollapsed = false;
+    else if (startPref === "always-collapsed") startCollapsed = true;
+  } catch (error) {
+    /* Preference unreadable - keep the remembered/default state. */
   }
 
   const setCollapsed = (collapsed) => {
@@ -2969,6 +2987,108 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("hashchange", applyRoute);
   applyRoute();
+
+  // ===== Settings panel =====
+  // Builds the controls for the #settings section (opened from the new
+  // "Settings" entry in the side navigation; the hash router above shows the
+  // section automatically). Two device-level preferences are offered:
+  //   1. "Sidebar on load" - pins how the sidebar starts. The side navigation
+  //      code at the top of app.js reads this preference on every load; with
+  //      "Remember my last choice" (the default) it behaves exactly as before.
+  //   2. "Reset preferences" - clears the remembered UI preferences (sidebar
+  //      open/collapsed state and the pinned start state) and reloads the
+  //      page. Workspace data (tickets, to-dos, FAQ, contacts, team, links,
+  //      onboarding) is intentionally left untouched.
+  // Everything is self-contained and guarded with an early return, so if the
+  // section is ever missing from the markup the rest of the page is unaffected.
+  (function initSettings() {
+    const settingsSection = document.getElementById("settings");
+    const settingsList = document.getElementById("settings-list");
+    if (!settingsSection || !settingsList) return;
+
+    const navStateKey = "intern-workspace-side-nav-collapsed";
+
+    const readStartPref = () => {
+      try {
+        return localStorage.getItem(SIDEBAR_START_PREF_KEY) || "";
+      } catch (error) {
+        return "";
+      }
+    };
+
+    const writeStartPref = (value) => {
+      try {
+        if (value) localStorage.setItem(SIDEBAR_START_PREF_KEY, value);
+        else localStorage.removeItem(SIDEBAR_START_PREF_KEY);
+      } catch (error) {
+        /* Preference simply will not persist across reloads. */
+      }
+    };
+
+    // Row 1: sidebar start state, as a compact select of the three choices.
+    const startRow = document.createElement("div");
+    startRow.className = "settings-item";
+
+    const startLabel = document.createElement("label");
+    startLabel.className = "settings-item-label";
+    startLabel.textContent = "Sidebar on load";
+    startLabel.htmlFor = "settings-sidebar-start";
+
+    const startSelect = document.createElement("select");
+    startSelect.id = "settings-sidebar-start";
+    [
+      { value: "", label: "Remember my last choice" },
+      { value: "always-expanded", label: "Always start expanded" },
+      { value: "always-collapsed", label: "Always start collapsed" },
+    ].forEach((option) => {
+      const opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      startSelect.appendChild(opt);
+    });
+    startSelect.value = readStartPref();
+    startSelect.addEventListener("change", () =>
+      writeStartPref(startSelect.value)
+    );
+
+    const startHint = document.createElement("p");
+    startHint.className = "settings-item-hint";
+    startHint.textContent =
+      "Overrides the remembered open/collapsed state the next time the page loads.";
+
+    startRow.append(startLabel, startSelect, startHint);
+
+    // Row 2: reset the remembered UI preferences only (never workspace data).
+    const resetRow = document.createElement("div");
+    resetRow.className = "settings-item";
+
+    const resetLabel = document.createElement("p");
+    resetLabel.className = "settings-item-label";
+    resetLabel.textContent = "Reset preferences";
+
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.className = "new-ticket-btn settings-reset-btn";
+    resetButton.textContent = "Reset sidebar preferences";
+    resetButton.addEventListener("click", () => {
+      try {
+        localStorage.removeItem(navStateKey);
+        localStorage.removeItem(SIDEBAR_START_PREF_KEY);
+      } catch (error) {
+        /* Nothing to clear when storage is unavailable. */
+      }
+      window.location.reload();
+    });
+
+    const resetHint = document.createElement("p");
+    resetHint.className = "settings-item-hint";
+    resetHint.textContent =
+      "Clears the remembered sidebar position and the start preference above. Workspace data is not affected.";
+
+    resetRow.append(resetLabel, resetButton, resetHint);
+
+    settingsList.append(startRow, resetRow);
+  })();
 
   // ===== Login "who are you?" popup + signed-in badge =====
   // Shows a modal overlay once per browser session (sessionStorage) and keeps a
