@@ -207,3 +207,5 @@ __Generally, improve UI of page__
 - Sync to JSON button and sync panel moved to settings section
 - Password changer for admin added to the settings section
 - Added a logout button to switch users
+- 'Signed in as' changed to icon instead
+- Icons added to all navbar section headings

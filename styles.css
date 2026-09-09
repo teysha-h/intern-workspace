@@ -179,11 +179,22 @@ body.side-nav-collapsed .side-nav {
 }
 
 /* Panel links: the shared `nav a` rules still supply the accent colour and
-   weight; here they become full-width rows with the app's light-blue pill. */
+   weight; here they become full-width rows with the app's light-blue pill.
+   Each row is a flex line so its section icon sits next to the label with a
+   matching gap, exactly like the other icon rows in the app. */
 .side-nav nav a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-sm);
+}
+
+/* Sidebar section icons: all rendered at the same 16px size and kept from
+   shrinking if the row ever compresses. They use stroke="currentColor", so
+   they always match the link label colour exactly. */
+.side-nav nav a svg {
+  flex-shrink: 0;
 }
 
 .side-nav nav a:hover {
