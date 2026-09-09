@@ -51,14 +51,6 @@
       </nav>
     </aside>
 
-    <!-- Floating sync-status chip. The sync-to-JSON action now lives in the
-         Settings section, so only the status indicator remains up here; it is
-         pinned to the top-right corner directly below the signed-in badge.
-         app.js updates it via #sync-status exactly as before. -->
-    <div class="sync-status-corner">
-      <span id="sync-status" class="sync-badge connected">All changes synced</span>
-    </div>
-
     <header>
       <h1>Intern Workspace</h1>
     </header>
@@ -242,6 +234,11 @@
            app.js. -->
       <section id="settings">
         <h2>Settings</h2>
+        <!-- Live sync-status chip. Kept hidden here (outside the #settings-list)
+             purely so the #sync-status lookup used by setSyncStatus() finds it;
+             initSettings() moves it into the row next to the Sync to JSON
+             button once the settings controls are built. -->
+        <span id="sync-status" class="sync-badge connected" hidden>All changes synced</span>
         <div class="settings-list" id="settings-list"></div>
       </section>
     </main>

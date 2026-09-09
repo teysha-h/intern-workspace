@@ -3023,12 +3023,24 @@ document.addEventListener("DOMContentLoaded", () => {
       syncToJsonFile();
     });
 
+    // Group the button and the live status chip side by side. The chip is
+    // marked up in the settings section (hidden) so the #sync-status lookup in
+    // setSyncStatus() keeps working; appending it here simply moves it into
+    // this row.
+    const syncActions = document.createElement("div");
+    syncActions.className = "settings-sync-actions";
+    syncActions.appendChild(syncButton);
+    if (syncStatusEl) {
+      syncStatusEl.hidden = false;
+      syncActions.appendChild(syncStatusEl);
+    }
+
     const syncHint = document.createElement("p");
     syncHint.className = "settings-item-hint";
     syncHint.textContent =
       "Same action as the Save JSON button in the header: writes all workspace data to the connected JSON file.";
 
-    syncRow.append(syncLabel, syncButton, syncHint);
+    syncRow.append(syncLabel, syncActions, syncHint);
 
     // Row 2: change the admin password - placeholder only, not built yet.
     const passwordRow = document.createElement("div");
