@@ -3170,59 +3170,82 @@ document.addEventListener("DOMContentLoaded", () => {
   })();
 
   // ===== Login "who are you?" popup + signed-in badge =====
-  // Shows a modal overlay once per browser session (sessionStorage) and keeps a
-  // small "signed in as" badge in the top-right corner that reflects the saved
-  // identity. The list of people is read live from the existing Team section
-  // (#team-list) so it always matches the roster on the page and never needs a
-  // duplicated copy. Everything here is self-contained: it only appends overlay
-  // and badge markup on top of the already-functional page without re-wiring
-  // any existing logic.
-  (function initLoginPopup() {
-    const userStorageKey = "intern-workspace-current-user";
+  // Shows the modal overlay (once per browser session on first load, and again
+  // whenever Logout is chosen) and keeps a small "signed in as" badge in the
+  // top-right corner that reflects the saved identity, with a Logout button
+  // below it. The list of people is read live from the existing Team section
+  // (#team-list) each time the popup opens, so it always matches the roster on
+  // the page and never needs a duplicated copy. Everything here is
+  // self-contained: it only appends badge/logout markup and the popup on top of
+  // the already-functional page without re-wiring any existing logic.
+  const userStorageKey = "intern-workspace-current-user";
 
-    // Builds/updates the persistent badge that shows who is signed in. If no
-    // member is provided the badge is left in place (the popup just closes).
-    const renderUserBadge = (member) => {
-      if (!member || !member.name) return;
-      let badge = document.getElementById("signed-in-badge");
-      if (!badge) {
-        badge = document.createElement("div");
-        badge.id = "signed-in-badge";
-        badge.className = "signed-in-badge";
-        document.body.appendChild(badge);
+  // Builds/updates the persistent badge that shows who is signed in, with a
+  // Logout button directly beneath it. If no member is provided the badge is
+  // left in place (the popup just closes).
+  const renderUserBadge = (member) => {
+    if (!member || !member.name) return;
+    let badgeWrap = document.getElementById("signed-in-badge");
+    if (!badgeWrap) {
+      badgeWrap = document.createElement("div");
+      badgeWrap.id = "signed-in-badge";
+      badgeWrap.className = "signed-in-badge";
+      document.body.appendChild(badgeWrap);
+    }
+
+    badgeWrap.innerHTML = "";
+
+    const chip = document.createElement("div");
+    chip.className = "signed-in-badge-chip";
+
+    const label = document.createElement("span");
+    label.className = "signed-in-badge-label";
+    label.textContent = "Signed in as";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "signed-in-badge-name";
+    nameSpan.textContent = member.name;
+
+    if (member.admin) chip.classList.add("admin");
+    else chip.classList.remove("admin");
+
+    if (member.role) badgeWrap.setAttribute("data-role", member.role);
+    chip.append(label, nameSpan);
+    badgeWrap.appendChild(chip);
+
+    // Logout clears the saved identity, hides the badge and re-opens the same
+    // "who are you?" popup so a different user can be chosen from the start.
+    const logoutButton = document.createElement("button");
+    logoutButton.type = "button";
+    logoutButton.className = "signed-in-logout-btn";
+    logoutButton.textContent = "Logout";
+    logoutButton.addEventListener("click", () => {
+      try {
+        sessionStorage.removeItem(userStorageKey);
+      } catch (e) {
+        // Non-fatal: the badge is still removed below.
       }
+      badgeWrap.remove();
 
-      badge.innerHTML = "";
-      const label = document.createElement("span");
-      label.className = "signed-in-badge-label";
-      label.textContent = "Signed in as";
+      // Drop the admin-only add/member-management controls and the admin
+      // "Change admin password" row so the page matches a signed-out session.
+      renderTeam();
+      const passwordRow = document.getElementById("settings-password-row");
+      if (passwordRow) passwordRow.hidden = true;
 
-      const nameSpan = document.createElement("span");
-      nameSpan.className = "signed-in-badge-name";
-      nameSpan.textContent = member.name;
+      openLoginModal();
+    });
+    badgeWrap.appendChild(logoutButton);
+  };
 
-      if (member.admin) badge.classList.add("admin");
-      else badge.classList.remove("admin");
+  // Reusable "who are you?" popup. It reads the live team roster from the
+  // existing Team section each time it opens, so the member choices always
+  // match the people on the page and never need a duplicated copy. Opening it
+  // while one is already on screen does nothing (guards against double-open).
+  const openLoginModal = () => {
+    if (document.querySelector(".login-modal")) return;
 
-      if (member.role) badge.setAttribute("data-role", member.role);
-      badge.append(label, nameSpan);
-    };
-
-    // 1. If an identity is already recorded for this session, just show the
-    //    badge and skip the popup.
-    let storedUser = null;
-    try {
-      const raw = sessionStorage.getItem(userStorageKey);
-      if (raw) storedUser = JSON.parse(raw);
-    } catch (e) {
-      // If sessionStorage is unavailable, still show the popup.
-    }
-    if (storedUser) {
-      renderUserBadge(storedUser);
-      return;
-    }
-
-    // 2. Read the team roster from the existing Team section markup.
+    // Read the team roster from the existing Team section markup.
     const teamCards = document.querySelectorAll("#team-list .contact-item.team-member");
     if (!teamCards.length) return; // no roster to choose from; skip silently
 
@@ -3384,6 +3407,15 @@ document.addEventListener("DOMContentLoaded", () => {
     card.append(title, prompt, options);
     overlay.appendChild(card);
     document.body.appendChild(overlay);
-  })();
+  };
+
+  // 1. If an identity is already recorded for this session, just show the
+  //    badge and skip the popup; otherwise open it for the first time.
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    renderUserBadge(currentUser);
+  } else {
+    openLoginModal();
+  }
 
 });

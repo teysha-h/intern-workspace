@@ -2146,14 +2146,24 @@ summary {
   }
 }
 
-/* ===== Signed-in badge (top-right corner) =====
-   Small persistent chip that shows which team member signed in. It floats in
-   the top-right corner above the page content and reuses the app variables. */
+/* ===== Signed-in badge + Logout button (top-right corner) =====
+   The fixed wrapper (top-right corner) holds the "signed in as" chip and a
+   Logout button beneath it. Both reuse the app variables so they look native
+   to the page's card/button styling. */
 .signed-in-badge {
   position: fixed;
   top: 0.75rem;
   right: 0.75rem;
   z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.signed-in-badge-chip {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -2163,8 +2173,6 @@ summary {
   border: 1px solid var(--border);
   border-radius: 999px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-  font-size: 0.85rem;
-  line-height: 1.2;
 }
 
 .signed-in-badge .signed-in-badge-label {
@@ -2176,9 +2184,35 @@ summary {
   color: var(--accent);
 }
 
-.signed-in-badge.admin {
+.signed-in-badge-chip.admin {
   border-color: var(--accent);
   background: var(--accent-light);
+}
+
+/* Compact Logout button under the badge. Like the page's other small buttons
+   (.new-ticket-btn / .sync-badge), it uses the shared Helvetica stack and the
+   surface/radius variables, highlighting with the accent on hover/focus so it
+   clearly reads as a clickable control. */
+.signed-in-logout-btn {
+  font-family: "Helvetica", Geneva, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.signed-in-logout-btn:hover,
+.signed-in-logout-btn:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  outline: none;
 }
 
 @media (max-width: 480px) {
@@ -2186,7 +2220,15 @@ summary {
     top: 0.5rem;
     right: 0.5rem;
     font-size: 0.8rem;
+  }
+
+  .signed-in-badge-chip {
     padding: 0.3rem 0.6rem;
+  }
+
+  .signed-in-logout-btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
   }
 }
 
