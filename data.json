@@ -88,7 +88,7 @@
       "task": "testing 1",
       "owner": "Taylor Brooks",
       "dueDate": "2026-08-14T00:00:00.000Z",
-      "completed": false,
+      "completed": true,
       "createdAt": "2026-08-13T01:23:36.051Z"
     },
     {
@@ -96,7 +96,7 @@
       "task": "testing 2",
       "owner": "Barry Allen",
       "dueDate": "2026-08-29T00:00:00.000Z",
-      "completed": false,
+      "completed": true,
       "createdAt": "2026-08-27T03:17:38.785Z"
     },
     {

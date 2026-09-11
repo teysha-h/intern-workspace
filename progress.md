@@ -221,4 +221,3 @@ __Generally, improve UI of page__
 - Added overdue highlighting for shared to-do
 - Search and 'add question' for FAQ section added 
 - Admin control for onboarding document management 
-- 
