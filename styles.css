@@ -1043,6 +1043,22 @@ ul.todo-list {
   color: var(--muted);
 }
 
+/* When an open task is overdue (due before today), highlight the tile in the
+   same soft red used by the delete buttons so it stands out. Completed tasks
+   never get this styling. Cosmetic only - the stored todo is unchanged. */
+.todo-item.overdue {
+  border-color: #f3c6c6;
+  background: #fdecec;
+}
+
+.todo-item.overdue .todo-label {
+  color: #b3261e;
+}
+
+.todo-item.overdue .todo-meta {
+  color: #b3261e;
+}
+
 /* Make Add comment and Edit (action-column non-cancel buttons) match the Delete (cancel) button color */
 .ticket-table td:last-child .ticket-action-btn:not(.cancel) {
   background: #f3f4f6;
@@ -1222,6 +1238,41 @@ summary {
   text-decoration: underline;
 }
 
+/* Onboarding: admin controls. The add form reuses the contact-edit-form
+   styling; admin rows become a flex row (link + remove button) while regular
+   rows keep the simple stacked layout. Cosmetic only - no data changes. */
+.onboarding-add-wrap {
+  margin-bottom: 1rem;
+}
+
+.onboarding-doc-item--admin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.onboarding-doc-actions .new-ticket-btn.delete-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  flex: 0 0 auto;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #f3c6c6;
+  color: #b3261e;
+}
+
+.onboarding-doc-actions .new-ticket-btn.delete-btn:hover {
+  background: #fdecec;
+  border-color: #e5a3a3;
+}
+
 /* FAQ: question list */
 .faq-list {
   display: grid;
@@ -1386,6 +1437,32 @@ summary {
 }
 
 .faq-edit-actions .new-ticket-btn:hover {
+  background: var(--accent-hover);
+}
+
+/* FAQ: search bar (matches the ticket/contacts search styling) */
+.faq-search {
+  margin-bottom: 1rem;
+}
+
+.faq-search input {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+/* FAQ: "Add Question" toggle styled like the other primary buttons. */
+.faq-list > .add-question-btn {
+  justify-self: start;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.faq-list > .add-question-btn:hover {
   background: var(--accent-hover);
 }
 
