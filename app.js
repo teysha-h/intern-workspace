@@ -1742,6 +1742,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
   };
 
+  // True when an open shared to-do's due date is strictly before today; a task
+  // due today is not overdue yet, and completed tasks are never overdue.
+  // Cosmetic flag for the tile highlight - the stored todo is unchanged.
+  const isOverdueTodo = (todo) => {
+    if (!todo || todo.completed) return false;
+    const due = new Date(todo.dueDate || "");
+    if (Number.isNaN(due.getTime())) return false;
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return due.getTime() < startOfToday.getTime();
+  };
+
   const toDateInputValue = (iso) => {
     if (!iso) return "";
     const d = new Date(iso);
@@ -1957,6 +1969,7 @@ document.addEventListener("DOMContentLoaded", () => {
             actions.append(toggle, editButton, remove);
             li.append(label, meta, actions);
             if (t.completed) li.classList.add("completed");
+            if (!t.completed && isOverdueTodo(t)) li.classList.add("overdue");
           }
 
           list.appendChild(li);
@@ -2380,12 +2393,71 @@ document.addEventListener("DOMContentLoaded", () => {
     return null;
   };
 
+  const buildOnboardingAddForm = () => {
+    const form = document.createElement("form");
+    form.className = "contact-edit-form";
+
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Name";
+    const nameInput = document.createElement("input");
+    nameInput.name = "name";
+    nameInput.required = true;
+    nameInput.placeholder = "Document name";
+    nameLabel.appendChild(nameInput);
+
+    const urlLabel = document.createElement("label");
+    urlLabel.textContent = "URL";
+    const urlInput = document.createElement("input");
+    urlInput.name = "url";
+    urlInput.type = "url";
+    urlInput.required = true;
+    urlInput.placeholder = "docs/example.pdf";
+    urlLabel.appendChild(urlInput);
+
+    const actions = document.createElement("div");
+    actions.className = "contact-edit-actions";
+
+    const addButton = document.createElement("button");
+    addButton.type = "submit";
+    addButton.className = "new-ticket-btn";
+    addButton.textContent = "Add document";
+    addButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const name = String(nameInput.value || "").trim();
+      const url = String(urlInput.value || "").trim();
+      if (!name || !url) return;
+      onboardingDocuments.push({ name, url });
+      saveOnboardingToLocalStorage();
+      markUnsynced();
+      renderOnboarding();
+    });
+
+    actions.appendChild(addButton);
+    form.append(nameLabel, urlLabel, actions);
+    return form;
+  };
+
   const renderOnboarding = () => {
     if (!onboardingSection) return;
+
+    const adminView = isAdminView();
 
     const preserve = onboardingSection.querySelector("h2");
     onboardingSection.innerHTML = "";
     if (preserve) onboardingSection.appendChild(preserve);
+
+    // Admin-only "Add document" form sits just above the resource list,
+    // mirroring the Team section's always-visible add-member form.
+    if (adminView) {
+      const addForm = buildOnboardingAddForm();
+      if (addForm) {
+        const addWrap = document.createElement("div");
+        addWrap.className = "onboarding-add-wrap";
+        addWrap.appendChild(addForm);
+        onboardingSection.appendChild(addWrap);
+      }
+    }
 
     const container = document.createElement("div");
     container.className = "onboarding-documents";
@@ -2395,14 +2467,16 @@ document.addEventListener("DOMContentLoaded", () => {
       empty.textContent = "No onboarding resources yet.";
       container.appendChild(empty);
     } else {
+      // Group the documents by the first word of their name, tracking the
+      // original array index so an admin's remove action deletes the right entry.
       const groups = new Map();
-      onboardingDocuments.forEach((doc) => {
+      onboardingDocuments.forEach((doc, index) => {
         const name = String(doc.name || doc.url || "");
         const category = name.trim().split(/\s+/)[0] || "Other";
         if (!groups.has(category)) {
           groups.set(category, []);
         }
-        groups.get(category).push(doc);
+        groups.get(category).push({ doc, index });
       });
 
       groups.forEach((docs, category) => {
@@ -2410,9 +2484,10 @@ document.addEventListener("DOMContentLoaded", () => {
         heading.textContent = category;
         container.appendChild(heading);
 
-        docs.forEach((doc) => {
+        docs.forEach(({ doc, index }) => {
           const item = document.createElement("div");
           item.className = "onboarding-doc-item";
+          if (adminView) item.classList.add("onboarding-doc-item--admin");
 
           const anchor = document.createElement("a");
           anchor.href = doc.url;
@@ -2420,6 +2495,30 @@ document.addEventListener("DOMContentLoaded", () => {
           anchor.rel = "noopener noreferrer";
           anchor.textContent = doc.name || doc.url;
           item.appendChild(anchor);
+
+          // Admins can remove a document; regular members see the list read-only.
+          if (adminView) {
+            const actions = document.createElement("div");
+            actions.className = "onboarding-doc-actions";
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "new-ticket-btn delete-btn";
+            deleteButton.innerHTML = deleteIconSvg;
+            deleteButton.setAttribute("aria-label", "Remove document");
+            deleteButton.setAttribute("data-tooltip", "Remove document");
+            deleteButton.addEventListener("click", (event) => {
+              event.preventDefault();
+              if (!confirm(`Remove ${doc.name || doc.url} from the resources?`)) return;
+              onboardingDocuments.splice(index, 1);
+              saveOnboardingToLocalStorage();
+              markUnsynced();
+              renderOnboarding();
+            });
+
+            actions.appendChild(deleteButton);
+            item.appendChild(actions);
+          }
 
           container.appendChild(item);
         });
@@ -2468,6 +2567,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // "Save JSON" sync can still push them into the connected data.json file.
   const faqStorageKey = "intern-workspace-faq";
   let editingFaqIndex = null;
+  let faqSearchQuery = "";
+  let showFaqForm = false;
 
   const saveFaqToLocalStorage = () => {
     try {
@@ -2511,12 +2612,124 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.createElement("div");
     container.className = "faq-list";
 
+    // Search bar: mirrors the Ticket Tracker / Contacts search pattern. The
+    // query is stored in faqSearchQuery so it persists across re-renders.
+    const searchForm = document.createElement("form");
+    searchForm.className = "faq-search";
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.placeholder = "Search FAQ questions and answers...";
+    searchInput.value = faqSearchQuery;
+    searchInput.name = "query";
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(searchForm);
+      faqSearchQuery = String(formData.get("query") || "").trim();
+      renderFaq();
+    });
+
+    // As-you-type filtering: update the query on every keystroke and re-render.
+    // Because renderFaq rebuilds the whole section, re-focus the freshly
+    // re-created input and move the cursor to the end so typing can continue.
+    searchInput.addEventListener("input", () => {
+      faqSearchQuery = searchInput.value;
+      renderFaq();
+      const freshInput = faqSection.querySelector(".faq-search input");
+      if (freshInput) {
+        freshInput.focus();
+        freshInput.setSelectionRange(freshInput.value.length, freshInput.value.length);
+      }
+    });
+
+    searchForm.appendChild(searchInput);
+    container.appendChild(searchForm);
+
+    // "Add Question" toggles an inline add form that mirrors the existing FAQ
+    // edit form, so new entries follow the exact same flow as edited ones.
+    const addQuestionButton = document.createElement("button");
+    addQuestionButton.type = "button";
+    addQuestionButton.className = "new-ticket-btn add-question-btn";
+    addQuestionButton.textContent = "Add Question";
+    addQuestionButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      showFaqForm = !showFaqForm;
+      renderFaq();
+    });
+    container.appendChild(addQuestionButton);
+
+    if (showFaqForm) {
+      const form = document.createElement("form");
+      form.className = "faq-edit-form";
+
+      const questionLabel = document.createElement("label");
+      questionLabel.textContent = "Question";
+      const questionInput = document.createElement("input");
+      questionInput.name = "question";
+      questionInput.required = true;
+      questionInput.placeholder = "New question";
+      questionLabel.appendChild(questionInput);
+
+      const answerLabel = document.createElement("label");
+      answerLabel.textContent = "Answer";
+      const answerInput = document.createElement("textarea");
+      answerInput.name = "answer";
+      answerInput.required = true;
+      answerInput.placeholder = "Answer";
+      answerLabel.appendChild(answerInput);
+
+      const actions = document.createElement("div");
+      actions.className = "faq-edit-actions";
+
+      const saveButton = document.createElement("button");
+      saveButton.type = "submit";
+      saveButton.className = "new-ticket-btn";
+      saveButton.textContent = "Add FAQ";
+      saveButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const question = String(questionInput.value || "").trim();
+        const answer = String(answerInput.value || "").trim();
+        if (!question || !answer) return;
+        faqItems.push({ question, answer });
+        showFaqForm = false;
+        saveFaqToLocalStorage();
+        markUnsynced();
+        renderFaq();
+      });
+
+      const cancelButton = document.createElement("button");
+      cancelButton.type = "button";
+      cancelButton.className = "new-ticket-btn";
+      cancelButton.textContent = "Cancel";
+      cancelButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        showFaqForm = false;
+        renderFaq();
+      });
+
+      actions.append(saveButton, cancelButton);
+      form.append(questionLabel, answerLabel, actions);
+      container.appendChild(form);
+    }
+
+    const query = String(faqSearchQuery || "").trim().toLowerCase();
+    const matchesQuery = (item) =>
+      !query ||
+      [item.question, item.answer].some((value) =>
+        String(value || "").toLowerCase().includes(query)
+      );
+
     if (!Array.isArray(faqItems) || faqItems.length === 0) {
       const empty = document.createElement("p");
       empty.textContent = "No FAQ items yet.";
       container.appendChild(empty);
     } else {
+      let matchCount = 0;
       faqItems.forEach((item, itemIndex) => {
+        if (query && !matchesQuery(item)) return;
+        matchCount += 1;
         const entry = document.createElement("div");
         entry.className = "faq-item faq-item--collapsible";
 
@@ -2644,6 +2857,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         container.appendChild(entry);
       });
+
+      // Show a distinct message when items exist but none match the search.
+      if (matchCount === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No FAQ items match your search query.";
+        container.appendChild(empty);
+      }
     }
 
     faqSection.appendChild(container);
@@ -2989,6 +3209,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Decide the panel state now that every section has been loaded.
   refreshSyncState();
 
+  // Re-run the same check whenever the window regains focus, so a file saved
+  // outside the app (or edited between visits) is reflected without a reload.
+  window.addEventListener("focus", () => {
+    refreshSyncState();
+  });
+
   // ===== Simple hash router: each section card behaves as its own page =====
   // No hash => show the Dashboard section. A hash such as #tickets shows only that
   // section card, so each card works like its own page without extra HTML files.
@@ -3240,6 +3466,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Drop the admin-only add/member-management controls and the admin
       // "Change admin password" row so the page matches a signed-out session.
       renderTeam();
+      renderOnboarding();
       const passwordRow = document.getElementById("settings-password-row");
       if (passwordRow) passwordRow.hidden = true;
 
@@ -3379,6 +3606,10 @@ document.addEventListener("DOMContentLoaded", () => {
       renderUserBadge(member);
       close();
       renderTeam();
+
+      // Refresh the onboarding section so the admin-only add/remove controls
+      // appear (or stay hidden) to match the identity just chosen.
+      renderOnboarding();
 
       // Reveal (or keep hidden) the admin-only "Change admin password" row to
       // match the identity just chosen; on a reload with a saved session the
