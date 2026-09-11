@@ -214,3 +214,11 @@ __Generally, improve UI of page__
 ## Thu - 10th September 2026
 ### Completed tasks:
 - Use-case diagram for system created
+
+
+## Fri - 11th September 2026
+### Completed tasks:
+- Added overdue highlighting for shared to-do
+- Search and 'add question' for FAQ section added 
+- Admin control for onboarding document management 
+- 
